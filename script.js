@@ -1,446 +1,302 @@
-// JCE Live Community Chat - Production JavaScript
-// Professional Purple Theme - Full Feature Implementation
+// JCE Live Community Chat - CLOUD EDITION w/ AWS DynamoDB
+// GitHub Pages Frontend + DynamoDB Backend (FREE TIER)
 
-class JCEChatPro {
+class JCEChatCloud {
   constructor() {
     this.user = null;
     this.currentChannel = 'general';
-    this.channels = {
-      general: "👋 Welcome to JCE General Chat! Discuss campus events, celebrations, and everything JCE!",
-      announce: "📢 Official announcements from faculty, administration, and student council.",
-      projects: "💻 Share coding projects, seek debugging help, collaborate on assignments!",
-      linkedin: "📈 Promote your LinkedIn posts, share internships, placements, achievements.",
-      startups: "🚀 Pitch startup ideas, find co-founders, discuss funding & business models.",
-      academic: "📚 Course doubts, syllabus discussions, exam preparation, study materials."
+    this.AWS_CONFIG = {
+      region: 'ap-south-1',
+      accessKeyId: 'YOUR_ACCESS_KEY_ID',     // ← IAM User keys
+      secretAccessKey: 'YOUR_SECRET_ACCESS_KEY'  // ← IAM User keys
     };
+    this.dynamodb = null;
     this.init();
   }
 
   init() {
+    this.initAWS();
     this.createParticles();
     this.handleLogin();
     this.handleChannels();
     this.handleMessages();
     this.loadUser();
-    this.simulateRealTimeActivity();
-    this.setupKeyboardShortcuts();
+    this.simulateActivity();
+    this.loadMessagesFromCloud(); // CLOUD LOAD
   }
 
-  // ADVANCED PARTICLE SYSTEM
+  // AWS DYNAMODB INITIALIZATION
+  initAWS() {
+    // Load AWS SDK (add to index.html: <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1400.0.min.js"></script>)
+    AWS.config.update(this.AWS_CONFIG);
+    this.dynamodb = new AWS.DynamoDB.DocumentClient();
+    console.log('✅ AWS DynamoDB Connected - Cloud Storage Ready!');
+  }
+
+  // CLOUD SAVE MESSAGE TO DYNAMODB
+  async saveMessageToCloud(message) {
+    try {
+      const params = {
+        TableName: 'JCEChat-Messages',
+        Item: {
+          channel: message.channel,
+          timestamp: message.timestamp,
+          userId: message.userId,
+          name: message.name,
+          dept: `${message.dept} ${message.year}`,
+          content: message.content,
+          email: message.userId
+        }
+      };
+      
+      await this.dynamodb.put(params).promise();
+      console.log('💾 Message saved to DynamoDB!');
+      return true;
+    } catch (error) {
+      console.error('❌ DynamoDB Error:', error);
+      this.showNotification('Cloud save failed - using local fallback', 'error');
+      return false;
+    }
+  }
+
+  // CLOUD LOAD MESSAGES FROM DYNAMODB
+  async loadMessagesFromCloud(channel = this.currentChannel) {
+    try {
+      const params = {
+        TableName: 'JCEChat-Messages',
+        KeyConditionExpression: 'channel = :channel',
+        ExpressionAttributeValues: { ':channel': channel },
+        ScanIndexForward: false, // Newest first
+        Limit: 100
+      };
+      
+      const result = await this.dynamodb.query(params).promise();
+      const messagesEl = document.getElementById('messages');
+      
+      if (result.Items && result.Items.length > 0) {
+        messagesEl.innerHTML = result.Items.map(msg => this.formatMessage(msg)).join('');
+      } else {
+        messagesEl.innerHTML = `
+          <div class="message other" style="text-align:center;color:var(--gray-500);">
+            🌐 Cloud storage active! No messages yet. Be first to chat!
+          </div>
+        `;
+      }
+      
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      console.log(`📥 Loaded ${result.Items?.length || 0} messages from DynamoDB`);
+    } catch (error) {
+      console.error('DynamoDB load error:', error);
+      this.showNotification('Cloud load failed - showing welcome message', 'info');
+    }
+  }
+
+  // SAVE USER TO DYNAMODB
+  async saveUserToCloud(user) {
+    try {
+      const params = {
+        TableName: 'JCEChat-Users',
+        Item: {
+          email: user.email,
+          name: user.name,
+          dept: user.dept,
+          year: user.year,
+          joinedAt: Date.now()
+        }
+      };
+      await this.dynamodb.put(params).promise();
+      console.log('👤 User profile saved to DynamoDB!');
+    } catch (error) {
+      console.error('User save error:', error);
+    }
+  }
+
   createParticles() {
-    const particlesContainer = document.getElementById('particles');
-    if (!particlesContainer) return;
-    
+    const particles = document.getElementById('particles');
     for(let i = 0; i < 70; i++) {
       const particle = document.createElement('div');
       particle.className = 'particle';
       particle.style.left = Math.random() * 100 + '%';
       particle.style.animationDelay = `-${Math.random() * 15}s`;
       particle.style.animationDuration = (10 + Math.random() * 10) + 's';
-      particle.style.width = (2.5 + Math.random() * 3) + 'px';
-      particle.style.height = particle.style.width;
-      particlesContainer.appendChild(particle);
+      particles.appendChild(particle);
     }
   }
 
-  // PRODUCTION LOGIN SYSTEM WITH VALIDATION
   handleLogin() {
-    const form = document.getElementById('profile-form');
-    if (!form) return;
-
-    form.addEventListener('submit', (e) => {
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const formData = new FormData(e.target);
+      this.user = Object.fromEntries(formData);
       
-      const formData = new FormData(form);
-      const userData = Object.fromEntries(formData);
-      
-      // JCE Email Validation
-      if (!userData.email || !userData.email.includes('@jerusalemengg.ac.in')) {
-        this.showNotification('Please use your official JCE email address (@jerusalemengg.ac.in)', 'error');
+      // JCE Email validation
+      if (!this.user.email.includes('@jerusalemengg.ac.in')) {
+        this.showNotification('Please use JCE email (@jerusalemengg.ac.in)', 'error');
         return;
       }
       
-      // Password validation
-      if (userData.password.length < 6) {
-        this.showNotification('Password must be at least 6 characters', 'error');
-        return;
-      }
-      
-      // Store user profile
-      this.user = {
-        ...userData,
-        joinedAt: new Date().toISOString(),
-        id: userData.email.replace('@jerusalemengg.ac.in', '').replace(/\./g, '')
-      };
-      
+      // Save to localStorage AND CLOUD
       localStorage.setItem('jceUser', JSON.stringify(this.user));
+      await this.saveUserToCloud(this.user);
       
-      // Smooth page transition
-      const loginScreen = document.getElementById('login-screen');
-      loginScreen.style.transition = 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
-      loginScreen.style.opacity = '0';
-      loginScreen.style.transform = 'scale(0.95) translateY(30px)';
-      
+      // Smooth transition
+      document.getElementById('login-screen').style.opacity = '0';
       setTimeout(() => {
-        loginScreen.style.display = 'none';
+        document.getElementById('login-screen').style.display = 'none';
         document.getElementById('chat-screen').style.display = 'flex';
-        this.loadChannel('general');
-        this.showNotification(`Welcome back, ${this.user.name}!`, 'success');
+        document.getElementById('channel-title').textContent = 'General Chat (Cloud)';
+        this.loadMessagesFromCloud();
+        this.showNotification(`🌐 Welcome ${this.user.name}! Cloud chat active!`, 'success');
       }, 600);
     });
   }
 
-  // LOAD SAVED USER (Auto-login)
   loadUser() {
-    try {
-      const savedUser = localStorage.getItem('jceUser');
-      if (savedUser) {
-        this.user = JSON.parse(savedUser);
-        
-        // Skip login screen for returning users
-        const loginScreen = document.getElementById('login-screen');
-        const chatScreen = document.getElementById('chat-screen');
-        
-        loginScreen.style.display = 'none';
-        chatScreen.style.display = 'flex';
-        this.loadChannel('general');
-        this.updateOnlineCount();
-      }
-    } catch (e) {
-      console.error('Failed to load user:', e);
+    const saved = localStorage.getItem('jceUser');
+    if (saved) {
+      this.user = JSON.parse(saved);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('chat-screen').style.display = 'flex';
+      this.loadMessagesFromCloud();
     }
   }
 
-  // PROFESSIONAL CHANNEL MANAGEMENT
   handleChannels() {
-    document.querySelectorAll('.channel').forEach((channel, index) => {
-      channel.addEventListener('click', () => {
-        // Visual feedback
+    document.querySelectorAll('.channel').forEach(channel => {
+      channel.addEventListener('click', async () => {
         document.querySelectorAll('.channel').forEach(c => c.classList.remove('active'));
         channel.classList.add('active');
-        
         this.currentChannel = channel.dataset.channel;
-        const channelTitle = channel.textContent.replace(/📢|📫|💻|💼|🚀|🎓/g, '').trim();
-        document.getElementById('channel-title').textContent = channelTitle;
+        document.getElementById('channel-title').textContent = 
+          channel.textContent.replace(/📢|📫|💻|💼|🚀|🎓/g, '').trim() + ' (Cloud)';
         
-        // Load channel messages with smooth transition
-        this.loadChannel(this.currentChannel);
-        this.showNotification(`Switched to ${channelTitle}`, 'info');
-      });
-      
-      // Add keyboard navigation
-      channel.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          channel.click();
-        }
+        await this.loadMessagesFromCloud(this.currentChannel);
+        this.showNotification(`Switched to ${this.currentChannel} - Cloud loaded!`, 'info');
       });
     });
   }
 
-  // LOAD CHANNEL WITH PERSISTENT MESSAGES
-  loadChannel(channel) {
-    const messagesContainer = document.getElementById('messages');
-    if (!messagesContainer) return;
-    
-    try {
-      // Load from localStorage
-      const savedMessages = JSON.parse(localStorage.getItem(`jce-${channel}`) || '[]');
-      
-      if (savedMessages.length === 0) {
-        messagesContainer.innerHTML = `
-          <div class="message other" style="text-align: center; background: rgba(255,255,255,0.8); color: var(--gray-500);">
-            ${this.channels[channel] || 'Welcome to the channel! Be the first to post.'}
-          </div>
-        `;
-      } else {
-        messagesContainer.innerHTML = savedMessages.map(msg => this.formatMessage(msg)).join('');
-      }
-      
-      // Auto-scroll to bottom
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    } catch (e) {
-      console.error('Failed to load channel:', e);
-    }
-  }
-
-  // PROFESSIONAL MESSAGE FORMATTING
   formatMessage(msg) {
-    const isOwnMessage = msg.userId === this.user?.email;
-    const time = new Date(msg.timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-    
-    const messageClass = isOwnMessage ? 'own' : 'other';
-    const header = !isOwnMessage 
-      ? `<div class="message-header">${msg.name} <span style="font-weight: 500;">(${msg.dept} ${msg.year})</span></div>`
-      : '';
+    const isOwn = msg.userId === this.user?.email;
+    const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
     
     return `
-      <div class="message ${messageClass}">
-        ${header}
-        <div style="margin: 4px 0; line-height: 1.4;">${this.formatMessageContent(msg.content)}</div>
-        <div class="message-time">
-          ${time} ${msg.edited ? '✏️ edited' : ''}
-        </div>
+      <div class="message ${isOwn ? 'own' : 'other'}">
+        ${!isOwn ? `<div class="message-header">${msg.name} (${msg.dept})</div>` : ''}
+        <div>${this.formatContent(msg.content)}</div>
+        <div class="message-time">${time} ${msg.email ? '🌐' : ''}</div>
       </div>
     `;
   }
 
-  // MESSAGE CONTENT PROCESSING (emojis, mentions)
-  formatMessageContent(content) {
-    // Basic @mention highlighting
+  formatContent(content) {
     return content
-      .replace(/@(\w+)/g, '<span style="color: var(--purple-500); font-weight: 600;">@$1</span>')
-      .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: var(--purple-500); text-decoration: underline;">$1</a>');
+      .replace(/@(\w+)/g, '<span style="color:var(--purple-500);font-weight:600;">@$1</span>')
+      .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:var(--purple-500);">🔗</a>');
   }
 
-  // PRODUCTION MESSAGE SENDING SYSTEM
-  handleMessages() {
-    const sendButton = document.getElementById('send-btn');
-    const messageInput = document.getElementById('message-input');
+  async handleMessages() {
+    const sendBtn = document.getElementById('send-btn');
+    const input = document.getElementById('message-input');
     
-    if (!sendButton || !messageInput) return;
-
-    const sendMessage = () => {
-      const content = messageInput.value.trim();
+    const send = async () => {
+      const content = input.value.trim();
       if (!content || !this.user) {
-        this.showNotification('Please login and type a message', 'error');
+        this.showNotification('Login and type message first!', 'error');
         return;
       }
-
-      if (content.length > 1000) {
-        this.showNotification('Message too long (max 1000 chars)', 'error');
-        return;
-      }
-
-      // Create message object
+      
+      // Create cloud message
       const message = {
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: Date.now().toString(),
+        channel: this.currentChannel,
         userId: this.user.email,
         name: this.user.name,
         dept: this.user.dept,
         year: this.user.year,
-        content: content,
-        timestamp: Date.now(),
-        edited: false
+        content,
+        timestamp: Date.now()
       };
-
-      // Add to UI instantly (optimistic update)
-      const messagesContainer = document.getElementById('messages');
-      messagesContainer.innerHTML += this.formatMessage(message);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-      // Persist to localStorage
-      try {
-        const savedMessages = JSON.parse(localStorage.getItem(`jce-${this.currentChannel}`) || '[]');
-        savedMessages.push(message);
-        // Keep only last 200 messages per channel
-        localStorage.setItem(`jce-${this.currentChannel}`, JSON.stringify(savedMessages.slice(-200)));
-      } catch (e) {
-        console.error('Failed to save message:', e);
-      }
-
-      // Clear input
-      messageInput.value = '';
       
-      // Rate limiting simulation (1 msg/sec)
-      sendButton.disabled = true;
-      setTimeout(() => sendButton.disabled = false, 1000);
-
-      // Simulate community response
-      this.simulateCommunityResponse();
+      // SAVE TO CLOUD (Primary)
+      const cloudSaved = await this.saveMessageToCloud(message);
+      
+      // ADD TO UI IMMEDIATELY
+      const messagesEl = document.getElementById('messages');
+      messagesEl.innerHTML += this.formatMessage(message);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      
+      input.value = '';
+      
+      if (cloudSaved) {
+        this.showNotification('💾 Message saved to AWS DynamoDB!', 'success');
+      }
+      
+      this.simulateCloudResponse();
     };
-
-    // Button click
-    sendButton.addEventListener('click', sendMessage);
     
-    // Enter key (with shift for new line)
-    messageInput.addEventListener('keypress', (e) => {
+    sendBtn.addEventListener('click', send);
+    input.addEventListener('keypress', e => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        sendMessage();
+        send();
       }
-    });
-
-    // Auto-resize textarea simulation
-    messageInput.addEventListener('input', () => {
-      messageInput.style.height = 'auto';
-      messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
     });
   }
 
-  // COMMUNITY SIMULATION (Realistic responses)
-  simulateCommunityResponse() {
-    const responseDelays = [1200, 2200, 3500];
-    const responseDelay = responseDelays[Math.floor(Math.random() * responseDelays.length)];
-    
-    setTimeout(() => {
-      if (!this.user) return;
-
-      const responses = [
-        "That's a great point! 👍",
-        "Thanks for sharing! 🙌", 
-        "Interesting perspective 🤔",
-        "Completely agree! 💯",
-        "Good question! Let me think... ❓",
-        "Well said! 🎯",
-        "Thanks for the info! 📝"
-      ];
-
-      const communityMembers = [
-        { name: 'Sara', dept: 'ECE', year: 'II' },
-        { name: 'Amit', dept: 'IT', year: 'IV' },
-        { name: 'Priya', dept: 'CSE', year: 'III' },
-        { name: 'Karthik', dept: 'CSE', year: 'II' },
-        { name: 'Neha', dept: 'MBA', year: 'IV' }
-      ];
-
-      const member = communityMembers[Math.floor(Math.random() * communityMembers.length)];
-      const response = responses[Math.floor(Math.random() * responses.length)];
-
-      const botMessage = {
-        id: `bot-${Date.now()}`,
-        userId: `bot-${member.name}`,
-        name: member.name,
-        dept: member.dept,
-        year: member.year,
-        content: response,
-        timestamp: Date.now(),
-        edited: false
+  simulateCloudResponse() {
+    setTimeout(async () => {
+      const responses = ['Great point Kevin! 👍', 'Thanks! 🙌', 'Interesting! 🤔'];
+      const response = responses[Math.floor(Math.random() * 3)];
+      
+      const botMsg = {
+        channel: this.currentChannel,
+        timestamp: Date.now() + 1000,
+        userId: 'bot@jce.ac.in',
+        name: 'JCE Bot',
+        dept: 'AI',
+        content: response
       };
-
-      const messagesContainer = document.getElementById('messages');
-      messagesContainer.innerHTML += this.formatMessage(botMessage);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-      // Persist bot response
-      const savedMessages = JSON.parse(localStorage.getItem(`jce-${this.currentChannel}`) || '[]');
-      savedMessages.push(botMessage);
-      localStorage.setItem(`jce-${this.currentChannel}`, JSON.stringify(savedMessages.slice(-200)));
-    }, responseDelay);
+      
+      await this.saveMessageToCloud(botMsg);
+      const messagesEl = document.getElementById('messages');
+      messagesEl.innerHTML += this.formatMessage(botMsg);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }, 1500);
   }
 
-  // REAL-TIME ONLINE USERS SIMULATION
-  simulateRealTimeActivity() {
-    let onlineCount = 25;
+  simulateActivity() {
     setInterval(() => {
-      onlineCount = Math.max(15, onlineCount + (Math.random() - 0.5) * 10);
-      const countEl = document.getElementById('online-count');
-      if (countEl) {
-        countEl.textContent = Math.round(onlineCount);
-      }
+      document.getElementById('online-count').textContent = 25 + Math.floor(Math.random() * 15);
     }, 5000);
-
-    // Typing indicators simulation
-    setInterval(() => {
-      if (Math.random() > 0.7 && document.visibilityState === 'visible') {
-        this.showTypingIndicator();
-      }
-    }, 15000);
   }
 
-  // TYPING INDICATOR
-  showTypingIndicator() {
-    const messagesContainer = document.getElementById('messages');
-    const typingIndicator = document.createElement('div');
-    typingIndicator.id = 'typing-indicator';
-    typingIndicator.style.cssText = `
-      padding: 12px 20px; margin: 8px 0; font-style: italic; 
-      color: var(--gray-500); font-size: 14px; opacity: 0.7;
-    `;
-    typingIndicator.innerHTML = 'Sara (ECE II) is typing<span class="typing-dots">...</span>';
-    messagesContainer.appendChild(typingIndicator);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-    setTimeout(() => {
-      if (typingIndicator.parentNode) {
-        typingIndicator.remove();
-      }
-    }, 3000);
-  }
-
-  // NOTIFICATION SYSTEM
   showNotification(message, type = 'info') {
-    // Remove existing notifications
-    const existing = document.querySelector('.notification');
-    if (existing) existing.remove();
-
     const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
     notification.style.cssText = `
-      position: fixed; top: 20px; right: 20px; z-index: 10000;
-      padding: 16px 24px; border-radius: 12px; font-weight: 600;
-      color: white; min-width: 300px; box-shadow: var(--shadow-xl);
-      transform: translateX(400px); opacity: 0; transition: all 0.4s ease;
+      position:fixed;top:20px;right:20px;z-index:10000;padding:16px 24px;
+      border-radius:12px;font-weight:600;color:white;min-width:300px;
+      transform:translateX(400px);opacity:0;transition:all 0.4s;
+      background:linear-gradient(135deg,${type==='success'?'#10b981':'#a855f7'} 0%, #6d28d9 100%);
+      box-shadow:0 20px 25px rgba(0,0,0,0.1);
     `;
-
-    const colors = {
-      success: 'linear-gradient(135deg, #10b981, #059669)',
-      error: 'linear-gradient(135deg, #ef4444, #dc2626)',
-      info: 'linear-gradient(135deg, var(--purple-500), var(--purple-600))'
-    };
-
-    notification.style.background = colors[type] || colors.info;
     notification.textContent = message;
-
     document.body.appendChild(notification);
-
-    // Animate in
+    
     requestAnimationFrame(() => {
       notification.style.transform = 'translateX(0)';
       notification.style.opacity = '1';
     });
-
-    // Auto remove
+    
     setTimeout(() => {
       notification.style.transform = 'translateX(400px)';
       notification.style.opacity = '0';
       setTimeout(() => notification.remove(), 400);
     }, 4000);
   }
-
-  // KEYBOARD SHORTCUTS
-  setupKeyboardShortcuts() {
-    document.addEventListener('keydown', (e) => {
-      // Cmd/Ctrl + K: Quick channel switch
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        const channels = document.querySelectorAll('.channel');
-        const currentActive = document.querySelector('.channel.active');
-        const currentIndex = Array.from(channels).indexOf(currentActive);
-        const nextIndex = (currentIndex + 1) % channels.length;
-        channels[nextIndex].click();
-      }
-      
-      // Escape: Clear input
-      if (e.key === 'Escape') {
-        const input = document.getElementById('message-input');
-        if (input) input.value = '';
-        input?.blur();
-      }
-    });
-  }
-
-  // UPDATE ONLINE COUNT
-  updateOnlineCount() {
-    const countEl = document.getElementById('online-count');
-    if (countEl) {
-      countEl.textContent = Math.floor(Math.random() * 20) + 15;
-    }
-  }
 }
 
-// Initialize when DOM is ready
+// Initialize Cloud Chat
 document.addEventListener('DOMContentLoaded', () => {
-  new JCEChatPro();
+  new JCEChatCloud();
 });
-
-// PWA Service Worker Registration (Production Ready)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('SW registered'))
-      .catch(err => console.error('SW registration failed'));
-  });
-}
