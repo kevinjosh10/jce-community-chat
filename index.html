@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JCE Live Community Chat - Professional Purple</title>
+  <style>
+    /* PROFESSIONAL PURPLE THEME - CLEAN & MODERN */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+      height: 100vh;
+      transition: all 0.5s ease;
+    }
+
+    /* CLEAN PURPLE GRADIENT BACKGROUND */
+    .cosmic-bg {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: 
+        linear-gradient(135deg, #1e1b4b 0%, #2d1b69 25%, #3b1f8a 50%, #1e1b4b 100%);
+      animation: subtleShift 40s ease-in-out infinite;
+      z-index: -2;
+    }
+    @keyframes subtleShift {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.95; }
+    }
+
+    /* ELEGANT WHITE PARTICLES */
+    .particles {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 1;
+    }
+    .particle {
+      position: absolute; width: 3px; height: 3px; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+      animation: rise 12s infinite linear;
+    }
+    @keyframes rise {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 1; transform: scale(1); }
+      90% { opacity: 1; }
+      100% { transform: translateY(-50px) scale(1.1); opacity: 0; }
+    }
+
+    /* PROFESSIONAL JCE LOGO */
+    .jce-logo {
+      position: absolute; top: 12%; left: 50%; transform: translateX(-50%);
+      font-size: clamp(3.8rem, 12vw, 6.5rem); font-weight: 900;
+      background: linear-gradient(135deg, #a855f7 0%, #c084fc 50%, #e879f9 100%);
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent; text-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+      animation: logoFloat 8s ease-in-out infinite;
+      text-align: center;
+    }
+    @keyframes logoFloat {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-8px); }
+    }
+
+    /* CLEAN PROFESSIONAL LOGIN */
+    #login-screen {
+      min-height: 100vh; display: flex; flex-direction: column;
+      position: relative; justify-content: center; align-items: center;
+      padding: 2rem 1rem; z-index: 10;
+    }
+    .pro-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px); border-radius: 24px;
+      padding: 3rem 2.5rem; width: 100%; max-width: 420px;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.8);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .pro-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 
+        0 35px 70px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(168, 85, 247, 0.3);
+    }
+
+    /* PROFESSIONAL FORM FIELDS */
+    .form-row { 
+      margin-bottom: 1.5rem; 
+    }
+    .form-row input, .form-row select {
+      width: 100%; padding: 16px 20px; font-size: 16px;
+      background: white; border: 2px solid #e2e8f0;
+      border-radius: 12px; color: #1a202c; font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .form-row input:focus, .form-row select:focus {
+      outline: none; border-color: #a855f7;
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+      transform: translateY(-1px);
+    }
+    .form-row input::placeholder { color: #a0aec0; }
+
+    /* CLEAN PURPLE BUTTON */
+    .pro-btn {
+      width: 100%; padding: 18px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: white; border: none; border-radius: 16px; font-size: 18px;
+      font-weight: 700; cursor: pointer; transition: all 0.3s ease;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .pro-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(124, 58, 237, 0.4);
+      background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+    }
+
+    /* PROFESSIONAL CHAT LAYOUT */
+    #chat-screen {
+      display: none; height: 100vh; background: #f8fafc;
+      flex-direction: row; position: relative;
+    }
+    @media (max-width: 768px) {
+      #chat-screen { flex-direction: column; }
+      .sidebar { 
+        position: fixed; bottom: 0; left: 0; right: 0; height: 85px;
+        display: flex; background: #1e293b; padding: 1rem; z-index: 1000;
+        overflow-x: auto; gap: 1rem;
+      }
+    }
+    .sidebar {
+      width: 28%; max-width: 320px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      color: white; padding: 3rem 1.5rem; overflow-y: auto;
+      box-shadow: 4px 0 25px rgba(0,0,0,0.2);
+    }
+    .channel {
+      padding: 1.2rem 1rem; margin: 0.8rem 0; border-radius: 16px;
+      cursor: pointer; transition: all 0.3s ease; font-weight: 600;
+      font-size: 15px; display: flex; align-items: center; gap: 12px;
+      border-left: 4px solid transparent;
+    }
+    .channel:hover { 
+      background: rgba(168, 85, 247, 0.15); 
+      transform: translateX(6px);
+      border-left-color: #a855f7;
+    }
+    .channel.active { 
+      background: rgba(168, 85, 247, 0.2); 
+      border-left-color: #7c3aed;
+      box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
+    }
+
+    .chat-area { flex: 1; display: flex; flex-direction: column; }
+    .chat-header {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%); 
+      color: white; padding: 1.5rem 2rem; font-weight: 700; font-size: 18px;
+      display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .online-dot {
+      width: 10px; height: 10px; background: #10b981; border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 
+      0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 
+      70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); } 
+      100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } 
+    }
+
+    .messages {
+      flex: 1; padding: 2.5rem 2rem; overflow-y: auto; background: #f8fafc;
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    .message {
+      max-width: 75%; padding: 14px 18px; border-radius: 20px;
+      animation: slideIn 0.3s ease-out; word-wrap: break-word;
+    }
+    .message.own {
+      align-self: flex-end; background: linear-gradient(135deg, #a855f7, #9333ea);
+      color: white; border-bottom-right-radius: 8px;
+    }
+    .message.other {
+      align-self: flex-start; background: white; border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-bottom-left-radius: 8px;
+    }
+    .message-header {
+      font-size: 12px; opacity: 0.8; margin-bottom: 4px; font-weight: 600;
+    }
+    .message-time {
+      font-size: 11px; opacity: 0.7; margin-top: 4px;
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .input-bar {
+      padding: 2rem 2.5rem; background: white; border-top: 1px solid #e2e8f0;
+      display: flex; gap: 1rem; box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    }
+    #message-input {
+      flex: 1; padding: 16px 24px; border: 2px solid #e2e8f0; 
+      border-radius: 28px; font-size: 16px; transition: all 0.3s ease;
+      background: #fafbfc;
+    }
+    #message-input:focus { 
+      outline: none; border-color: #a855f7; 
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+    }
+    .send-btn {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: white; border: none; border-radius: 50%; 
+      width: 56px; height: 56px; cursor: pointer; font-size: 20px;
+      transition: all 0.3s ease; font-weight: 700;
+    }
+    .send-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(124,58,237,0.4); }
+
+    /* PROFESSIONAL FOOTER - EVERY PAGE */
+    .footer {
+      position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600; z-index: 1000;
+      background: rgba(30, 41, 59, 0.9); padding: 10px 24px; 
+      border-radius: 20px; backdrop-filter: blur(15px);
+      text-align: center; border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    @media (max-width: 480px) {
+      .pro-card { padding: 2.5rem 2rem; margin: 0 1rem; }
+      .messages { padding: 2rem 1.5rem; }
+      .input-bar { padding: 1.8rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- CLEAN PURPLE BACKGROUND -->
+  <div class="cosmic-bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="jce-logo">JCE LIVE COMMUNITY CHAT</div>
+    
+    <div class="pro-card">
+      <h2 style="color: #1e293b; font-size: 28px; margin-bottom: 2rem; text-align: center; font-weight: 800;">
+        Join JCE Community
+      </h2>
+      <form id="profile-form">
+        <div class="form-row">
+          <input name="name" placeholder="Full Name (Ravi Kumar)" required maxlength="50">
+        </div>
+        <div class="form-row">
+          <select name="dept" required>
+            <option value="">Select Department</option>
+            <option value="CSE">CSE - Computer Science</option>
+            <option value="ECE">ECE - Electronics</option>
+            <option value="IT">IT - Information Technology</option>
+            <option value="MECH">MECH - Mechanical</option>
+            <option value="CIVIL">CIVIL - Civil Engineering</option>
+            <option value="MBA">MBA - Management</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <select name="year" required>
+            <option value="">Select Year</option>
+            <option value="I">I Year</option>
+            <option value="II">II Year</option>
+            <option value="III">III Year</option>
+            <option value="IV">IV Year</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <input name="email" type="email" placeholder="ravi@jerusalemengg.ac.in" required>
+        </div>
+        <div class="form-row">
+          <input name="password" type="password" placeholder="Password (8+ characters)" required minlength="8">
+        </div>
+        <button type="submit" class="pro-btn">Join Community</button>
+      </form>
+    </div>
+
+    <div class="footer">JCE community live chat BY Kevin Joshua</div>
+  </div>
+
+  <!-- CHAT SCREEN -->
+  <div id="chat-screen">
+    <div class="sidebar">
+      <div class="channel active" data-channel="general">📢 General Chat</div>
+      <div class="channel" data-channel="announce">📫 Important Announcements</div>
+      <div class="channel" data-channel="projects">💻 Projects & Code</div>
+      <div class="channel" data-channel="linkedin">💼 LinkedIn Promotion</div>
+      <div class="channel" data-channel="startups">🚀 Startup Ideas</div>
+      <div class="channel" data-channel="academic">🎓 Academic Discussions</div>
+    </div>
+
+    <div class="chat-area">
+      <div class="chat-header">
+        <span id="channel-title">General Chat</span>
+        <span class="online-dot"></span>
+        <span id="online-count">27</span> online
+      </div>
+      
+      <div class="messages" id="messages"></div>
+      
+      <div class="input-bar">
+        <input id="message-input" placeholder="Type your message... (Enter to send)" maxlength="1000">
+        <button class="send-btn" id="send-btn">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER ON CHAT SCREEN TOO -->
+  <div class="footer" style="background: rgba(248, 250, 252, 0.95); color: #475569; border-color: rgba(168, 85, 247, 0.2);">
+    JCE community live chat BY Kevin Joshua
+  </div>
+
+  <script>
+    class JCEChatPro {
+      constructor() {
+        this.user = null;
+        this.currentChannel = 'general';
+        this.init();
+      }
+
+      init() {
+        this.createParticles();
+        this.handleLogin();
+        this.handleChannels();
+        this.handleMessages();
+        this.loadUser();
+        this.simulateActivity();
+      }
+
+      createParticles() {
+        const particles = document.getElementById('particles');
+        for(let i = 0; i < 60; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          particle.style.left = Math.random() * 100 + '%';
+          particle.style.animationDelay = `-${Math.random() * 12}s`;
+          particle.style.animationDuration = (8 + Math.random() * 8) + 's';
+          particles.appendChild(particle);
+        }
+      }
+
+      handleLogin() {
+        document.getElementById('profile-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          this.user = Object.fromEntries(formData);
+          
+          if (!this.user.email.includes('@jerusalemengg.ac.in')) {
+            alert('Please use @jerusalemengg.ac.in email');
+            return;
+          }
+          
+          localStorage.setItem('jceUser', JSON.stringify(this.user));
+          
+          document.getElementById('login-screen').style.opacity = '0';
+          setTimeout(() => {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('chat-screen').style.display = 'flex';
+            this.loadChannel('general');
+          }, 400);
+        });
+      }
+
+      loadUser() {
+        const saved = localStorage.getItem('jceUser');
+        if (saved) {
+          this.user = JSON.parse(saved);
+          document.getElementById('login-screen').style.display = 'none';
+          document.getElementById('chat-screen').style.display = 'flex';
+          this.loadChannel('general');
+        }
+      }
+
+      handleChannels() {
+        document.querySelectorAll('.channel').forEach(channel => {
+          channel.addEventListener('click', () => {
+            document.querySelectorAll('.channel').forEach(c => c.classList.remove('active'));
+            channel.classList.add('active');
+            this.currentChannel = channel.dataset.channel;
+            document.getElementById('channel-title').textContent = 
+              channel.textContent.replace(/📢|📫|💻|💼|🚀|🎓/g, '').trim();
+            this.loadChannel(this.currentChannel);
+          });
+        });
+      }
+
+      loadChannel(channel) {
+        const messagesEl = document.getElementById('messages');
+        const saved = JSON.parse(localStorage.getItem(`jce-${channel}`) || '[]');
+        messagesEl.innerHTML = saved.map(msg => this.formatMessage(msg)).join('') || 
+          '<div class="message other" style="text-align:center;color:#64748b;">Welcome! Start the conversation.</div>';
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      formatMessage(msg) {
+        const isOwn = msg.userId === this.user?.email;
+        const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+        return `
+          <div class="message ${isOwn ? 'own' : 'other'}">
+            ${!isOwn ? `<div class="message-header">${msg.name} (${msg.dept} ${msg.year})</div>` : ''}
+            <div>${msg.content}</div>
+            <div class="message-time">${time}</div>
+          </div>
+        `;
+      }
+
+      handleMessages() {
+        const sendBtn = document.getElementById('send-btn');
+        const input = document.getElementById('message-input');
+        
+        const send = () => {
+          const content = input.value.trim();
+          if (!content || !this.user) return;
+          
+          const msg = {
+            id: Date.now().toString(),
+            userId: this.user.email,
+            name: this.user.name,
+            dept: this.user.dept,
+            year: this.user.year,
+            content,
+            timestamp: Date.now()
+          };
+          
+          const messagesEl = document.getElementById('messages');
+          messagesEl.innerHTML += this.formatMessage(msg);
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+          
+          const saved = JSON.parse(localStorage.getItem(`jce-${this.currentChannel}`) || '[]');
+          saved.push(msg);
+          localStorage.setItem(`jce-${this.currentChannel}`, JSON.stringify(saved.slice(-100)));
+          
+          input.value = '';
+          this.simulateResponse();
+        };
+        
+        sendBtn.addEventListener('click', send);
+        input.addEventListener('keypress', e => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            send();
+          }
+        });
+      }
+
+      simulateResponse() {
+        setTimeout(() => {
+          const responses = ["Good point!", "Thanks!", "Interesting!", "Agreed!", "Nice!"];
+          const names = ["Sara (ECE II)", "Amit (IT IV)", "Priya (CSE III)"];
+          const response = names[Math.floor(Math.random() * 3)] + ": " + 
+                          responses[Math.floor(Math.random() * 5)];
+          
+          const messagesEl = document.getElementById('messages');
+          messagesEl.innerHTML += `
+            <div class="message other">
+              <div class="message-header">${response.split(': ')[0]}</div>
+              <div>${response.split(': ')[1]}</div>
+              <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</div>
+            </div>
+          `;
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }, 1200);
+      }
+
+      simulateActivity() {
+        setInterval(() => {
+          document.getElementById('online-count').textContent = 20 + Math.floor(Math.random() * 20);
+        }, 7000);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      new JCEChatPro();
+    });
+  </script>
+</body>
+</html>
