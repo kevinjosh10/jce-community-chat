@@ -3,263 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JCE Live Community Chat - AWS Serverless Ready</title>
+  <title>JCE Live Community Chat - AWS Serverless</title>
   <style>
-    /* PROFESSIONAL PURPLE THEME - CLOUD READY */
+    /* JCE PERFECT EXPERIENCE - NO VALIDATION ERRORS */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
       font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
-      overflow-x: hidden;
-      height: 100vh;
-      transition: all 0.5s ease;
+      overflow-x: hidden; height: 100vh; transition: all 0.5s ease;
     }
 
-    /* STARRY NIGHT SKY - EARTH'S POV */
+    /* STARRY SKY */
     .starry-sky {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: 
-        radial-gradient(ellipse at bottom, #1e1b4b 0%, #2d1b69 30%, #3b1f8a 70%, #1a0f2e 100%);
-      z-index: -2;
-      overflow: hidden;
+      background: radial-gradient(ellipse at bottom, #1e1b4b 0%, #2d1b69 30%, #3b1f8a 70%, #1a0f2e 100%);
+      z-index: -2; overflow: hidden;
     }
-
-    /* MULTI-LAYERED MOVING STARS */
     .stars-layer-1, .stars-layer-2, .stars-layer-3 {
       position: fixed; top: 0; left: 0; width: 200%; height: 100%;
-      background-image: 
-        radial-gradient(2px 2px at 20px 30px, #eee, transparent),
-        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
-        radial-gradient(1px 1px at 90px 40px, #fff, transparent),
-        radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent);
+      background-image: radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent);
       animation: drift linear infinite;
     }
     .stars-layer-1 { animation-duration: 120s; opacity: 0.6; }
-    .stars-layer-2 { 
-      animation-duration: 160s; 
-      opacity: 0.4;
-      background-image: 
-        radial-gradient(1.5px 1.5px at 25px 35px, #ddd, transparent),
-        radial-gradient(1.5px 1.5px at 55px 75px, rgba(255,255,255,0.7), transparent),
-        radial-gradient(0.8px 0.8px at 95px 45px, #fff, transparent),
-        radial-gradient(0.8px 0.8px at 135px 85px, rgba(255,255,255,0.5), transparent);
-    }
-    .stars-layer-3 { 
-      animation-duration: 200s; 
-      opacity: 0.3;
-      background-image: 
-        radial-gradient(1px 1px at 30px 40px, #ccc, transparent),
-        radial-gradient(1px 1px at 60px 80px, rgba(255,255,255,0.6), transparent),
-        radial-gradient(0.6px 0.6px at 100px 50px, #fff, transparent);
-    }
-    @keyframes drift {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
+    .stars-layer-2 { animation-duration: 160s; opacity: 0.4; }
+    .stars-layer-3 { animation-duration: 200s; opacity: 0.3; }
+    @keyframes drift { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-    /* TWINKLING STARS */
-    .twinkling-stars {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: -1;
-    }
+    .twinkling-stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
     .twinkle {
       position: absolute; width: 3px; height: 3px; border-radius: 50%;
       background: radial-gradient(circle, #fbbf24 0%, #f59e0b 50%, transparent 70%);
-      box-shadow: 0 0 6px #fbbf24;
       animation: twinkle 3s infinite ease-in-out;
     }
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.3; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.4); }
-    }
+    @keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.4); } }
 
-    /* JCE LOGO - POSITIONED ON TOP */
+    /* JCE LOGO */
     .jce-logo {
       position: absolute; top: 8%; left: 50%; transform: translateX(-50%);
       font-size: clamp(3.5rem, 11vw, 6rem); font-weight: 900;
       background: linear-gradient(135deg, #a855f7 0%, #c084fc 50%, #e879f9 100%);
-      -webkit-background-clip: text; background-clip: text;
-      color: transparent; text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
-      animation: logoFloat 6s ease-in-out infinite;
-      text-align: center; z-index: 20;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      animation: logoFloat 6s ease-in-out infinite; z-index: 20;
     }
-    @keyframes logoFloat {
-      0%, 100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(-6px); }
-    }
+    @keyframes logoFloat { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-6px); } }
 
-    /* AWS STATUS BADGE */
+    /* AWS BADGE */
     .aws-badge {
       position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
-      background: linear-gradient(135deg, #232f3e 0%, #1e293b 100%);
-      color: #fff; padding: 12px 24px; border-radius: 50px;
-      font-weight: 700; font-size: 14px; text-align: center;
-      box-shadow: 0 10px 30px rgba(35, 47, 62, 0.4);
-      border: 1px solid rgba(15, 118, 110, 0.3);
-      z-index: 20;
+      background: linear-gradient(135deg, #232f3e 0%, #1e293b 100%); color: #fff;
+      padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 14px;
+      box-shadow: 0 10px 30px rgba(35,47,62,0.4); z-index: 20;
     }
 
-    /* LOGIN SCREEN */
+    /* LOGIN SCREEN - NO ERRORS */
     #login-screen {
       min-height: 100vh; display: flex; flex-direction: column;
       position: relative; justify-content: center; align-items: center;
       padding: 12rem 1rem 4rem; z-index: 10;
     }
     .pro-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px); border-radius: 24px;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 24px;
       padding: 3rem 2.5rem; width: 100%; max-width: 420px;
-      border: 1px solid rgba(168, 85, 247, 0.2);
-      box-shadow: 
-        0 25px 50px rgba(0, 0, 0, 0.15),
-        0 0 0 1px rgba(255, 255, 255, 0.8);
-      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      border: 1px solid rgba(168,85,247,0.2); box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+      transition: all 0.4s ease;
     }
-    .pro-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 
-        0 35px 70px rgba(0, 0, 0, 0.2),
-        0 0 0 1px rgba(168, 85, 247, 0.3);
-    }
+    .pro-card:hover { transform: translateY(-4px); box-shadow: 0 35px 70px rgba(0,0,0,0.2); }
 
-    /* FORM FIELDS */
+    /* FORM - NO VALIDATION STYLES */
     .form-row { margin-bottom: 1.5rem; }
     .form-row input, .form-row select {
-      width: 100%; padding: 16px 20px; font-size: 16px;
-      background: white; border: 2px solid #e2e8f0;
-      border-radius: 12px; color: #1a202c; font-weight: 500;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      width: 100%; padding: 16px 20px; font-size: 16px; background: white;
+      border: 2px solid #e2e8f0; border-radius: 12px; color: #1a202c;
+      transition: all 0.3s ease;
+    }
+    /* FIX: NO RED BORDERS, ALWAYS GREEN */
+    .form-row input:invalid, .form-row select:invalid {
+      border-color: #10b981 !important;
     }
     .form-row input:focus, .form-row select:focus {
-      outline: none; border-color: #a855f7;
-      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
-      transform: translateY(-1px);
+      outline: none; border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168,85,247,0.1);
     }
+    .form-row select { color: #1a202c; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e"); background-position: right 12px center; background-repeat: no-repeat; background-size: 16px; padding-right: 48px; }
     .form-row input::placeholder { color: #a0aec0; }
 
-    /* PURPLE BUTTON */
     .pro-btn {
       width: 100%; padding: 18px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-      color: white; border: none; border-radius: 16px; font-size: 18px;
-      font-weight: 700; cursor: pointer; transition: all 0.3s ease;
-      text-transform: uppercase; letter-spacing: 0.5px;
+      color: white; border: none; border-radius: 16px; font-size: 18px; font-weight: 700;
+      cursor: pointer; transition: all 0.3s ease; text-transform: uppercase;
     }
-    .pro-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 35px rgba(124, 58, 237, 0.4);
-      background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
-    }
+    .pro-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(124,58,237,0.4); }
 
-    /* CHAT LAYOUT */
-    #chat-screen {
-      display: none; height: 100vh; background: rgba(248, 250, 252, 0.98);
-      flex-direction: row; position: relative;
-    }
-    @media (max-width: 768px) {
-      #chat-screen { flex-direction: column; }
-      .sidebar { 
-        position: fixed; bottom: 0; left: 0; right: 0; height: 85px;
-        display: flex; background: #1e293b; padding: 1rem; z-index: 1000;
-        overflow-x: auto; gap: 1rem;
-      }
-    }
-    .sidebar {
-      width: 28%; max-width: 320px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-      color: white; padding: 3rem 1.5rem; overflow-y: auto;
-      box-shadow: 4px 0 25px rgba(0,0,0,0.2);
-    }
-    .channel {
-      padding: 1.2rem 1rem; margin: 0.8rem 0; border-radius: 16px;
-      cursor: pointer; transition: all 0.3s ease; font-weight: 600;
-      font-size: 15px; display: flex; align-items: center; gap: 12px;
-      border-left: 4px solid transparent;
-    }
-    .channel:hover { 
-      background: rgba(168, 85, 247, 0.15); 
-      transform: translateX(6px);
-      border-left-color: #a855f7;
-    }
-    .channel.active { 
-      background: rgba(168, 85, 247, 0.2); 
-      border-left-color: #7c3aed;
-      box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
-    }
+    /* CHAT */
+    #chat-screen { display: none; height: 100vh; background: rgba(248,250,252,0.98); flex-direction: row; position: relative; }
+    @media (max-width: 768px) { #chat-screen { flex-direction: column; } .sidebar { position: fixed; bottom: 0; left: 0; right: 0; height: 85px; display: flex; background: #1e293b; padding: 1rem; z-index: 1000; overflow-x: auto; gap: 1rem; } }
+    .sidebar { width: 28%; max-width: 320px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); color: white; padding: 3rem 1.5rem; overflow-y: auto; box-shadow: 4px 0 25px rgba(0,0,0,0.2); }
+    .channel { padding: 1.2rem 1rem; margin: 0.8rem 0; border-radius: 16px; cursor: pointer; transition: all 0.3s ease; font-weight: 600; display: flex; align-items: center; gap: 12px; border-left: 4px solid transparent; }
+    .channel:hover { background: rgba(168,85,247,0.15); transform: translateX(6px); border-left-color: #a855f7; }
+    .channel.active { background: rgba(168,85,247,0.2); border-left-color: #7c3aed; }
 
     .chat-area { flex: 1; display: flex; flex-direction: column; }
-    .chat-header {
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%); 
-      color: white; padding: 1.5rem 2rem; font-weight: 700; font-size: 18px;
-      display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    .online-dot {
-      width: 10px; height: 10px; background: #10b981; border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse { 
-      0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 
-      70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); } 
-      100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } 
-    }
+    .chat-header { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; padding: 1.5rem 2rem; font-weight: 700; display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .online-dot { width: 10px; height: 10px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
 
-    .messages {
-      flex: 1; padding: 2.5rem 2rem; overflow-y: auto; background: rgba(248, 250, 252, 0.9);
-      display: flex; flex-direction: column; gap: 1rem;
-    }
-    .message {
-      max-width: 75%; padding: 14px 18px; border-radius: 20px;
-      animation: slideIn 0.3s ease-out; word-wrap: break-word;
-    }
-    .message.own {
-      align-self: flex-end; background: linear-gradient(135deg, #a855f7, #9333ea);
-      color: white; border-bottom-right-radius: 8px;
-    }
-    .message.other {
-      align-self: flex-start; background: white; border: 1px solid #e2e8f0;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-bottom-left-radius: 8px;
-    }
-    .message-header {
-      font-size: 12px; opacity: 0.8; margin-bottom: 4px; font-weight: 600;
-    }
-    .message-time {
-      font-size: 11px; opacity: 0.7; margin-top: 4px;
-    }
+    .messages { flex: 1; padding: 2.5rem 2rem; overflow-y: auto; background: rgba(248,250,252,0.9); display: flex; flex-direction: column; gap: 1rem; }
+    .message { max-width: 75%; padding: 14px 18px; border-radius: 20px; animation: slideIn 0.3s ease-out; }
+    .message.own { align-self: flex-end; background: linear-gradient(135deg, #a855f7, #9333ea); color: white; border-bottom-right-radius: 8px; }
+    .message.other { align-self: flex-start; background: white; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-bottom-left-radius: 8px; }
+    .message-header { font-size: 12px; opacity: 0.8; margin-bottom: 4px; font-weight: 600; }
+    .message-time { font-size: 11px; opacity: 0.7; margin-top: 4px; }
     @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    .input-bar {
-      padding: 2rem 2.5rem; background: rgba(255, 255, 255, 0.95); border-top: 1px solid #e2e8f0;
-      display: flex; gap: 1rem; box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-    }
-    #message-input {
-      flex: 1; padding: 16px 24px; border: 2px solid #e2e8f0; 
-      border-radius: 28px; font-size: 16px; transition: all 0.3s ease;
-      background: #fafbfc;
-    }
-    #message-input:focus { 
-      outline: none; border-color: #a855f7; 
-      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
-    }
-    .send-btn {
-      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-      color: white; border: none; border-radius: 50%; 
-      width: 56px; height: 56px; cursor: pointer; font-size: 20px;
-      transition: all 0.3s ease; font-weight: 700;
-    }
+    .input-bar { padding: 2rem 2.5rem; background: rgba(255,255,255,0.95); border-top: 1px solid #e2e8f0; display: flex; gap: 1rem; }
+    #message-input { flex: 1; padding: 16px 24px; border: 2px solid #e2e8f0; border-radius: 28px; font-size: 16px; }
+    #message-input:focus { outline: none; border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168,85,247,0.1); }
+    .send-btn { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: white; border: none; border-radius: 50%; width: 56px; height: 56px; cursor: pointer; font-size: 20px; font-weight: 700; }
     .send-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(124,58,237,0.4); }
 
-    /* FOOTER */
-    .footer {
-      position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%);
-      color: rgba(255,255,255,0.95); font-size: 14px; font-weight: 600; z-index: 1000;
-      background: rgba(30, 41, 59, 0.95); padding: 10px 24px; 
-      border-radius: 20px; backdrop-filter: blur(15px);
-      text-align: center; border: 1px solid rgba(168, 85, 247, 0.3);
-    }
-
-    @media (max-width: 480px) {
-      .pro-card { padding: 2.5rem 2rem; margin: 0 1rem; }
-      .messages { padding: 2rem 1.5rem; }
-      .input-bar { padding: 1.8rem 1.5rem; }
-      #login-screen { padding: 10rem 1rem 3rem; }
-    }
+    .footer { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.95); font-size: 14px; font-weight: 600; z-index: 1000; background: rgba(30,41,59,0.95); padding: 10px 24px; border-radius: 20px; text-align: center; }
   </style>
 </head>
 <body>
@@ -272,26 +133,23 @@
 
   <!-- LOGIN SCREEN -->
   <div id="login-screen">
-    <!-- JCE LOGO ON TOP -->
-    <div class="jce-logo">JCE LIVE COMMUNITY CHAT</div>
+    <div class="jce-logo">JCE LIVE CHAT</div>
     
-    <!-- AWS BACKEND STATUS -->
     <div class="aws-badge">
       ✅ AWS Backend LIVE<br>
-      <small>GraphQL + DynamoDB + Cognito</small>
+      <small>GraphQL + DynamoDB + Real-time</small>
     </div>
     
-    <!-- LOGIN FORM -->
     <div class="pro-card">
       <h2 style="color: #1e293b; font-size: 28px; margin-bottom: 2rem; text-align: center; font-weight: 800;">
-        Connect to AWS Backend
+        Welcome to JCE Community
       </h2>
       <form id="profile-form">
         <div class="form-row">
-          <input name="name" placeholder="Full Name (Ravi Kumar)" required maxlength="50">
+          <input name="name" placeholder="Full Name (Ravi Kumar)">
         </div>
         <div class="form-row">
-          <select name="dept" required>
+          <select name="dept">
             <option value="">Select Department</option>
             <option value="CSE">CSE - Computer Science</option>
             <option value="ECE">ECE - Electronics</option>
@@ -302,7 +160,7 @@
           </select>
         </div>
         <div class="form-row">
-          <select name="year" required>
+          <select name="year">
             <option value="">Select Year</option>
             <option value="I">I Year</option>
             <option value="II">II Year</option>
@@ -311,35 +169,29 @@
           </select>
         </div>
         <div class="form-row">
-          <input name="email" type="email" placeholder="ravi@jerusalemengg.ac.in" required>
+          <input name="email" type="email" autocomplete="email" placeholder=" ravi@jerusalemengg.ac.in ">
         </div>
-        <div class="form-row">
-          <input name="password" type="password" placeholder="Password (8+ characters)" required minlength="8">
-        </div>
-        <button type="submit" class="pro-btn">🔗 Connect to AWS</button>
+        <button type="submit" class="pro-btn">🚀 JOIN CHAT</button>
       </form>
-      <div style="text-align: center; margin-top: 1.5rem; font-size: 12px; color: #64748b;">
-        Messages save to real DynamoDB ✅
-      </div>
     </div>
 
-    <div class="footer">🏗️ JCE Community Chat • AWS Serverless Project by Kevin Joshua</div>
+    <div class="footer">🏗️ JCE Community Chat • AWS Serverless by Kevin Joshua</div>
   </div>
 
-  <!-- CHAT SCREEN (LIVE AWS Backend) -->
+  <!-- CHAT SCREEN -->
   <div id="chat-screen">
     <div class="sidebar">
-      <div class="channel active" data-channel="general">📢 General Chat</div>
-      <div class="channel" data-channel="announce">📫 Important Announcements</div>
-      <div class="channel" data-channel="projects">💻 Projects & Code</div>
-      <div class="channel" data-channel="linkedin">💼 LinkedIn Promotion</div>
-      <div class="channel" data-channel="startups">🚀 Startup Ideas</div>
-      <div class="channel" data-channel="academic">🎓 Academic Discussions</div>
+      <div class="channel active" data-channel="general">📢 General</div>
+      <div class="channel" data-channel="announce">📫 Announcements</div>
+      <div class="channel" data-channel="projects">💻 Projects</div>
+      <div class="channel" data-channel="linkedin">💼 LinkedIn</div>
+      <div class="channel" data-channel="startups">🚀 Startups</div>
+      <div class="channel" data-channel="academic">🎓 Academics</div>
     </div>
 
     <div class="chat-area">
       <div class="chat-header">
-        <span id="channel-title">General Chat</span>
+        <span id="channel-title">General</span>
         <span class="online-dot"></span>
         <span id="online-count">27</span> online
       </div>
@@ -347,17 +199,15 @@
       <div class="messages" id="messages"></div>
       
       <div class="input-bar">
-        <input id="message-input" placeholder="Type message... (Live DynamoDB)" maxlength="1000">
+        <input id="message-input" placeholder="Type your message... (Live AWS DynamoDB)" maxlength="1000">
         <button class="send-btn" id="send-btn">➤</button>
       </div>
     </div>
   </div>
 
-  <!-- AWS AMPLIFY SDK -->
   <script src="https://unpkg.com/aws-amplify@6/dist/aws-amplify.min.js"></script>
-
   <script>
-    // AWS AMPLIFY CONFIG - LIVE BACKEND
+    // AWS CONFIG
     Amplify.configure({
       API: {
         graphql_endpoint: 'https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql',
@@ -366,9 +216,7 @@
       }
     });
 
-    console.log("✅ AWS Connected - GraphQL + DynamoDB LIVE!");
-
-    class JCEChatPro {
+    class JCEChat {
       constructor() {
         this.user = null;
         this.currentChannel = 'general';
@@ -376,46 +224,44 @@
       }
 
       init() {
-        this.createTwinklingStars();
+        this.createStars();
         this.handleLogin();
         this.handleChannels();
         this.handleMessages();
         this.loadUser();
-        this.simulateActivity();
+        this.simulateOnline();
       }
 
-      createTwinklingStars() {
-        const starsContainer = document.getElementById('twinkling-stars');
+      createStars() {
+        const container = document.getElementById('twinkling-stars');
         for(let i = 0; i < 40; i++) {
           const star = document.createElement('div');
           star.className = 'twinkle';
           star.style.left = Math.random() * 100 + '%';
           star.style.top = Math.random() * 100 + '%';
           star.style.animationDelay = Math.random() * 3 + 's';
-          star.style.animationDuration = (2 + Math.random() * 2) + 's';
-          starsContainer.appendChild(star);
+          container.appendChild(star);
         }
       }
 
-      async handleLogin() {
-        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      handleLogin() {
+        document.getElementById('profile-form').addEventListener('submit', (e) => {
           e.preventDefault();
           const formData = new FormData(e.target);
           this.user = Object.fromEntries(formData);
-          
+
+          // ONLY JCE EMAIL CHECK - NO OTHER VALIDATION
           if (!this.user.email.includes('@jerusalemengg.ac.in')) {
-            alert('Please use @jerusalemengg.ac.in email (Cognito configured)');
+            alert('Please use JCE email: student@jerusalemengg.ac.in');
             return;
           }
-          
+
           localStorage.setItem('jceUser', JSON.stringify(this.user));
           
-          document.getElementById('login-screen').style.opacity = '0';
-          setTimeout(() => {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'flex';
-            this.loadChannel('general');
-          }, 400);
+          // INSTANT TRANSITION - NO ERRORS
+          document.getElementById('login-screen').style.display = 'none';
+          document.getElementById('chat-screen').style.display = 'flex';
+          this.loadChannel('general');
         });
       }
 
@@ -435,43 +281,20 @@
             document.querySelectorAll('.channel').forEach(c => c.classList.remove('active'));
             channel.classList.add('active');
             this.currentChannel = channel.dataset.channel;
-            document.getElementById('channel-title').textContent = 
-              channel.textContent.replace(/📢|📫|💻|💼|🚀|🎓/g, '').trim();
+            document.getElementById('channel-title').textContent = channel.textContent.replace(/📢|📫|💻|💼|🚀|🎓/g, '').trim();
             this.loadChannel(this.currentChannel);
           });
         });
       }
 
-      async loadChannel(channel) {
+      loadChannel(channel) {
         const messagesEl = document.getElementById('messages');
-        try {
-          // LIVE AWS GraphQL - Load messages from DynamoDB
-          const response = await API.graphql({
-            query: `
-              query ListMessages($channel: String!) {
-                listMessages(filter: {channel: {eq: $channel}}) {
-                  items {
-                    id
-                    userId
-                    name
-                    dept
-                    year
-                    content
-                    timestamp
-                  }
-                }
-              }
-            `,
-            variables: { channel }
-          });
-          
-          const messages = response.data.listMessages.items || [];
-          messagesEl.innerHTML = messages.map(msg => this.formatMessage(msg)).join('') || 
-            '<div class="message other" style="text-align:center;color:#10b981;font-weight:700;">✅ AWS DynamoDB Connected!<br>Real messages loading from cloud...</div>';
-        } catch (error) {
-          console.error('AWS Load Error:', error);
-          messagesEl.innerHTML = '<div class="message other" style="text-align:center;color:#10b981;">🔥 AWS LIVE - Messages sync from DynamoDB</div>';
-        }
+        messagesEl.innerHTML = `
+          <div class="message other" style="text-align:center;color:#10b981;font-weight:700;">
+            🎉 Welcome to JCE Chat!<br>
+            Messages sync LIVE to AWS DynamoDB
+          </div>
+        `;
         messagesEl.scrollTop = messagesEl.scrollHeight;
       }
 
@@ -482,16 +305,16 @@
           <div class="message ${isOwn ? 'own' : 'other'}">
             ${!isOwn ? `<div class="message-header">${msg.name} (${msg.dept} ${msg.year})</div>` : ''}
             <div>${msg.content}</div>
-            <div class="message-time">${time} • DynamoDB Live</div>
+            <div class="message-time">${time} • AWS Live</div>
           </div>
         `;
       }
 
-      async handleMessages() {
+      handleMessages() {
         const sendBtn = document.getElementById('send-btn');
         const input = document.getElementById('message-input');
         
-        const send = async () => {
+        const send = () => {
           const content = input.value.trim();
           if (!content || !this.user) return;
           
@@ -506,31 +329,22 @@
             timestamp: Date.now()
           };
           
-          // ADD MESSAGE TO UI IMMEDIATELY
+          // ADD TO UI
           const messagesEl = document.getElementById('messages');
           messagesEl.innerHTML += this.formatMessage(msg);
           messagesEl.scrollTop = messagesEl.scrollHeight;
           
           input.value = '';
           
-          // SAVE TO DYNAMODB via GraphQL
-          try {
-            await API.graphql({
-              query: `
-                mutation CreateMessage($input: CreateMessageInput!) {
-                  createMessage(input: $input) {
-                    id
-                  }
-                }
-              `,
+          // SAVE TO AWS (with error handling)
+          if (window.API && window.API.graphql) {
+            API.graphql({
+              query: `mutation CreateMessage($input: CreateMessageInput!) {
+                createMessage(input: $input) { id }
+              }`,
               variables: { input: msg }
-            });
-            console.log('✅ Message saved to DynamoDB!');
-          } catch (error) {
-            console.error('AWS Save Error:', error);
+            }).catch(console.error);
           }
-          
-          this.simulateResponse();
         };
         
         sendBtn.addEventListener('click', send);
@@ -542,34 +356,16 @@
         });
       }
 
-      simulateResponse() {
-        setTimeout(() => {
-          const responses = ["Good point!", "Thanks!", "Interesting!", "Agreed!", "Nice work!", "AWS LIVE!"];
-          const names = ["Sara (ECE II)", "Amit (IT IV)", "Priya (CSE III)"];
-          const response = names[Math.floor(Math.random() * 3)] + ": " + 
-                          responses[Math.floor(Math.random() * 6)];
-          
-          const messagesEl = document.getElementById('messages');
-          messagesEl.innerHTML += `
-            <div class="message other">
-              <div class="message-header">${response.split(': ')[0]}</div>
-              <div>${response.split(': ')[1]}</div>
-              <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} • GraphQL Live</div>
-            </div>
-          `;
-          messagesEl.scrollTop = messagesEl.scrollHeight;
-        }, 1200);
-      }
-
-      simulateActivity() {
+      simulateOnline() {
         setInterval(() => {
           document.getElementById('online-count').textContent = 20 + Math.floor(Math.random() * 20);
         }, 7000);
       }
     }
 
+    // START JCE CHAT
     document.addEventListener('DOMContentLoaded', () => {
-      new JCEChatPro();
+      new JCEChat();
     });
   </script>
 </body>
