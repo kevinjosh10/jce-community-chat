@@ -190,12 +190,10 @@
             border-color: var(--success);
         }
         
-        /* Green border for invalid as requested */
         .form-input:invalid {
             border-color: var(--success);
         }
         
-        /* Override default invalid style if needed */
         .form-input:not(:placeholder-shown):invalid {
             border-color: var(--success);
         }
@@ -582,12 +580,10 @@
 
     <!-- Login View -->
     <div class="login-container" id="login-view">
-        <div class="login-card">
-            <!-- Removed onsubmit="handleLogin(event)" from HTML to avoid scope issues -->
-            <form id="login-form">
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="login-card">
                 <div class="form-group">
                     <label class="form-label">Full Name</label>
-                    <!-- Removed required attribute -->
                     <input type="text" class="form-input" id="fullName" placeholder="Full Name (Ravi Kumar)">
                 </div>
                 
@@ -616,15 +612,14 @@
 
                 <div class="form-group">
                     <label class="form-label">JCE Email</label>
-                    <!-- Removed required attribute -->
                     <input type="email" class="form-input" id="email" placeholder="ravi@jerusalemengg.ac.in" autocomplete="email">
                 </div>
 
                 <button type="submit" class="btn-primary">
                     Join Chat 🚀
                 </button>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 
     <!-- Chat Interface -->
@@ -668,26 +663,24 @@
         </main>
     </div>
 
-    <!-- AWS Amplify & Logic -->
-    <!-- Using type="module" to support v6 imports from CDN -->
-    <script type="module">
-        import { Amplify } from 'https://unpkg.com/aws-amplify@6/dist/aws-amplify.min.mjs';
-        import { generateClient } from 'https://unpkg.com/aws-amplify@6/api/dist/aws-amplify-api.min.mjs';
+    <!-- Step A: UMD Script (Global Bundle) -->
+    <script src="https://unpkg.com/aws-amplify@6/dist/aws-amplify.min.js"></script>
 
+    <!-- Step C: Config & Logic -->
+    <script>
         // --- Configuration ---
-        const CONFIG = {
-            API: {
-                GraphQL: {
-                    endpoint: 'https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql',
-                    region: 'ap-south-1',
-                    defaultAuthMode: 'apiKey',
-                    apiKey: 'da2-5r3f3gtz5rfjvc6tsi6a4e6gwu'
+        // Using the global Amplify object as requested
+        if (typeof Amplify !== 'undefined') {
+            Amplify.configure({
+                API: {
+                    graphql_endpoint: 'https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql',
+                    graphql_region: 'ap-south-1',
+                    graphql_apiKey: 'da2-5r3f3gtz5rfjvc6tsi6a4e6gwu'
                 }
-            }
-        };
-
-        Amplify.configure(CONFIG);
-        const client = generateClient();
+            });
+        } else {
+            console.error('Amplify global object not found. Please check the script URL.');
+        }
 
         // --- State ---
         const state = {
@@ -701,7 +694,7 @@
                 { id: 'Startups', icon: '🚀', name: 'Startups' },
                 { id: 'Academics', icon: '🎓', name: 'Academics' }
             ],
-            messages: {}, // { channelId: [msgs] }
+            messages: {},
             subscription: null
         };
 
@@ -762,30 +755,20 @@
             }
         }
 
-        // Define handleLogin globally so it can be called if needed, 
-        // but we primarily attach it via addEventListener below.
-        window.handleLogin = (e) => {
-            if(e) e.preventDefault();
+        // Global handleLogin as requested
+        window.handleLogin = function(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value.trim();
             
-            const email = els.emailInput.value.trim();
-            const name = document.getElementById('fullName').value.trim();
-            
-            // Validation
             if (!email.endsWith('@jerusalemengg.ac.in')) {
                 alert('Please use your valid JCE email (@jerusalemengg.ac.in)');
-                els.emailInput.style.borderColor = '#10b981'; // Green as requested
-                return;
-            }
-            
-            if (!name) {
-                alert('Please enter your name');
                 return;
             }
 
             const user = {
-                name: name,
-                dept: document.getElementById('dept').value,
-                year: document.getElementById('year').value,
+                name: document.getElementById('fullName').value || 'JCE Student',
+                dept: document.getElementById('dept').value || 'CSE',
+                year: document.getElementById('year').value || 'III',
                 email: email,
                 id: Date.now().toString()
             };
@@ -793,7 +776,7 @@
             localStorage.setItem('jce_chat_user', JSON.stringify(user));
             state.user = user;
             showChat();
-        };
+        }
 
         els.emailInput.addEventListener('input', (e) => {
             if (e.target.value.includes('@jerusalemengg.ac.in')) {
@@ -877,7 +860,7 @@
             els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
         }
 
-        // --- AWS AppSync Integration ---
+        // --- AWS AppSync Integration (UMD Style) ---
         
         const createMessageMutation = `
             mutation CreateMessage($input: CreateMessageInput!) {
@@ -926,13 +909,15 @@
             els.messageInput.style.height = 'auto';
 
             try {
-                await client.graphql({
-                    query: createMessageMutation,
-                    variables: { input: message }
-                });
+                // Using Amplify.API.graphql for UMD
+                if (typeof Amplify !== 'undefined' && Amplify.API) {
+                    await Amplify.API.graphql({
+                        query: createMessageMutation,
+                        variables: { input: message }
+                    });
+                }
             } catch (err) {
                 console.error('Error sending message:', err);
-                // Fallback to local storage if offline
                 saveToLocalFallback(state.currentChannel, message);
             }
         }
@@ -976,34 +961,33 @@
 
             // Subscribe
             try {
-                state.subscription = client.graphql({
-                    query: onCreateMessageSubscription,
-                    variables: { filter: { channelId: { eq: channelId } } }
-                }).subscribe({
-                    next: ({ data }) => {
-                        const msg = data.onCreateMessage;
-                        if (msg.userId !== state.user.email) { // Don't duplicate own
-                            if (!state.messages[channelId]) state.messages[channelId] = [];
-                            state.messages[channelId].push(msg);
-                            renderMessages();
-                            // Sound
-                            new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3').play().catch(()=>{});
-                        }
-                    },
-                    error: (err) => console.error('Sub error:', err)
-                });
+                if (typeof Amplify !== 'undefined' && Amplify.API) {
+                    state.subscription = Amplify.API.graphql({
+                        query: onCreateMessageSubscription,
+                        variables: { filter: { channelId: { eq: channelId } } }
+                    }).subscribe({
+                        next: ({ value }) => { // Note: UMD/v5 often uses 'value' instead of 'data' in subscription events, or 'data'
+                            const data = value.data || value; // Handle both
+                            const msg = data.onCreateMessage;
+                            if (msg.userId !== state.user.email) { 
+                                if (!state.messages[channelId]) state.messages[channelId] = [];
+                                state.messages[channelId].push(msg);
+                                renderMessages();
+                                new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3').play().catch(()=>{});
+                            }
+                        },
+                        error: (err) => console.error('Sub error:', err)
+                    });
+                }
             } catch (err) {
-                console.log('Subscription setup failed (expected if schema mismatch)', err);
+                console.log('Subscription setup failed (expected if schema mismatch or no Amplify)', err);
             }
         }
 
         // --- Event Listeners ---
         function setupEventListeners() {
-            // Attach login handler robustly
-            if (els.loginForm) {
-                els.loginForm.addEventListener('submit', window.handleLogin);
-            }
-
+            // Note: onsubmit="handleLogin(event)" is already in HTML as requested
+            
             els.sendBtn.addEventListener('click', sendMessage);
             
             els.messageInput.addEventListener('keypress', (e) => {
