@@ -14,7 +14,7 @@
          */
         :root {
             --bg-dark: #1e1b4b;
-            --bg-darker: #1a0f2e;
+            --bg-darker: #0f0a1e;
             --primary: #a855f7;
             --primary-light: #e879f9;
             --glass: rgba(255, 255, 255, 0.95);
@@ -34,11 +34,18 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at center, var(--bg-dark), var(--bg-darker));
+            background: radial-gradient(circle at center, #2e1065, var(--bg-darker));
             color: white;
             height: 100vh;
             overflow: hidden;
             position: relative;
+            animation: skyGradient 60s infinite alternate;
+        }
+
+        @keyframes skyGradient {
+            0% { background: radial-gradient(circle at center, #2e1065, #0f0a1e); }
+            50% { background: radial-gradient(circle at center, #1e1b4b, #000000); }
+            100% { background: radial-gradient(circle at center, #312e81, #0f0a1e); }
         }
 
         /* --- Background Animation --- */
@@ -60,11 +67,12 @@
             opacity: 0;
             animation: twinkle var(--duration) ease-in-out infinite;
             animation-delay: var(--delay);
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
         }
 
         @keyframes twinkle {
             0%, 100% { opacity: 0.2; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.2); }
+            50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px rgba(255, 255, 255, 1); }
         }
 
         .layer {
@@ -76,7 +84,7 @@
             background-repeat: repeat;
             background-position: center;
             animation: drift linear infinite;
-            opacity: 0.3;
+            opacity: 0.4;
         }
 
         .layer-1 { 
@@ -100,6 +108,28 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Shooting Stars */
+        .shooting-star {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            height: 2px;
+            background: linear-gradient(-45deg, rgba(255, 255, 255, 1), rgba(0, 0, 255, 0));
+            filter: drop-shadow(0 0 6px rgba(105, 155, 255, 1));
+            animation: tail 3000ms ease-in-out infinite, shooting 3000ms ease-in-out infinite;
+        }
+
+        @keyframes tail {
+            0% { width: 0; }
+            30% { width: 100px; }
+            100% { width: 0; }
+        }
+
+        @keyframes shooting {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(300px); }
+        }
+
         /* --- Logo --- */
         .logo-container {
             position: absolute;
@@ -111,6 +141,11 @@
             width: 100%;
             pointer-events: none;
             animation: float 6s ease-in-out infinite;
+            transition: transform 0.3s;
+        }
+
+        .logo-container:hover {
+            transform: translateX(-50%) scale(1.05);
         }
 
         .logo-text {
@@ -154,30 +189,40 @@
             max-width: 480px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
         }
 
+        /* Floating Labels */
         .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-label {
-            display: block;
-            color: var(--text-main);
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
         }
 
         .form-input, .form-select {
             width: 100%;
             padding: 1rem;
+            padding-top: 1.5rem;
+            padding-bottom: 0.5rem;
             border: 2px solid #e5e7eb;
             border-radius: 12px;
             font-size: 1rem;
             font-family: inherit;
-            transition: all 0.2s;
+            transition: all 0.3s;
             background: white;
             color: var(--text-main);
+        }
+
+        .form-label {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            pointer-events: none;
+            transform-origin: left top;
         }
 
         .form-input:focus, .form-select:focus {
@@ -186,16 +231,32 @@
             box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
         }
 
+        .form-input:focus + .form-label,
+        .form-input:not(:placeholder-shown) + .form-label,
+        .form-select:focus + .form-label,
+        .form-select:not([value=""]) + .form-label {
+            transform: translateY(-0.75rem) scale(0.75);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
         .form-input.valid {
             border-color: var(--success);
         }
         
         .form-input:invalid {
-            border-color: var(--success);
+            border-color: var(--success); /* Green only as requested */
         }
-        
-        .form-input:not(:placeholder-shown):invalid {
-            border-color: var(--success);
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
         }
 
         .btn-primary {
@@ -213,15 +274,23 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
         }
+        
+        .btn-primary:hover .rocket-icon {
+            animation: rocketShake 0.5s ease-in-out infinite;
+        }
 
-        .btn-primary:active {
-            transform: translateY(0);
+        @keyframes rocketShake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
         }
 
         /* --- Chat Interface --- */
@@ -244,6 +313,21 @@
             opacity: 1;
             pointer-events: all;
             transform: scale(1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--primary), var(--primary-light)); 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary); 
         }
 
         /* Sidebar */
@@ -279,6 +363,7 @@
             justify-content: center;
             font-weight: 700;
             font-size: 1.125rem;
+            box-shadow: 0 4px 10px rgba(168, 85, 247, 0.3);
         }
 
         .user-info h3 {
@@ -314,12 +399,14 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            position: relative;
         }
 
         .channel-btn:hover {
             background: white;
             transform: translateX(4px);
             color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .channel-btn.active {
@@ -327,6 +414,18 @@
             color: var(--primary);
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             font-weight: 700;
+        }
+        
+        .channel-btn.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
         }
 
         /* Main Chat Area */
@@ -368,6 +467,7 @@
             background: rgba(16, 185, 129, 0.1);
             padding: 0.25rem 0.75rem;
             border-radius: 999px;
+            cursor: help;
         }
 
         .dot {
@@ -419,6 +519,11 @@
             word-wrap: break-word;
             line-height: 1.5;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .message-bubble:hover {
+            transform: scale(1.01);
         }
 
         .message.own .message-bubble {
@@ -458,6 +563,7 @@
             display: flex;
             gap: 1rem;
             align-items: flex-end;
+            position: relative;
         }
 
         .chat-input {
@@ -494,6 +600,34 @@
 
         .send-btn:hover {
             background: var(--bg-dark);
+            transform: scale(1.05);
+        }
+        
+        .typing-indicator {
+            position: absolute;
+            top: -30px;
+            left: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: var(--text-light);
+            border-radius: 50%;
+            animation: typingBounce 1s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typingBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
         }
 
         /* --- Mobile Responsive --- */
@@ -533,6 +667,10 @@
                 font-size: 0.875rem;
                 background: #f3f4f6;
             }
+            
+            .channel-btn.active::before {
+                display: none;
+            }
 
             .channel-btn.active {
                 background: var(--primary);
@@ -561,6 +699,7 @@
         .message-bubble strong { font-weight: 700; }
         .message-bubble em { font-style: italic; }
         .message-bubble a { text-decoration: underline; color: inherit; }
+        .message-bubble code { background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 4px; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -583,14 +722,14 @@
         <form id="login-form" onsubmit="handleLogin(event)">
             <div class="login-card">
                 <div class="form-group">
+                    <input type="text" class="form-input" id="fullName" placeholder=" " autocomplete="name">
                     <label class="form-label">Full Name</label>
-                    <input type="text" class="form-input" id="fullName" placeholder="Full Name (Ravi Kumar)">
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label class="form-label">Department</label>
                         <select class="form-select" id="dept">
+                            <option value="" disabled selected></option>
                             <option>CSE</option>
                             <option>ECE</option>
                             <option>IT</option>
@@ -598,25 +737,27 @@
                             <option>CIVIL</option>
                             <option>MBA</option>
                         </select>
+                        <label class="form-label">Department</label>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Year</label>
                         <select class="form-select" id="year">
+                            <option value="" disabled selected></option>
                             <option>I</option>
                             <option>II</option>
                             <option>III</option>
                             <option>IV</option>
                         </select>
+                        <label class="form-label">Year</label>
                     </div>
                 </div>
 
                 <div class="form-group">
+                    <input type="email" class="form-input" id="email" placeholder=" " autocomplete="email">
                     <label class="form-label">JCE Email</label>
-                    <input type="email" class="form-input" id="email" placeholder="ravi@jerusalemengg.ac.in" autocomplete="email">
                 </div>
 
-                <button type="submit" class="btn-primary">
-                    Join Chat 🚀
+                <button type="submit" class="btn-primary" id="join-btn">
+                    Join Chat <span class="rocket-icon">🚀</span>
                 </button>
             </div>
         </form>
@@ -644,7 +785,7 @@
                 <div class="channel-info">
                     <h2 id="current-channel-name">📢 General</h2>
                 </div>
-                <div class="live-indicator">
+                <div class="live-indicator" title="Live Users Online">
                     <div class="dot"></div>
                     <span id="online-count">42</span> Online
                 </div>
@@ -655,6 +796,12 @@
             </div>
 
             <div class="input-area">
+                <div class="typing-indicator" id="typing-indicator">
+                    <span>Someone is typing</span>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
                 <textarea class="chat-input" id="message-input" placeholder="Type a message..." rows="1" maxlength="1000"></textarea>
                 <button class="send-btn" id="send-btn">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
@@ -669,7 +816,6 @@
     <!-- Step C: Config & Logic -->
     <script>
         // --- Configuration ---
-        // Using the global Amplify object as requested
         if (typeof Amplify !== 'undefined') {
             Amplify.configure({
                 API: {
@@ -710,7 +856,8 @@
             sendBtn: document.getElementById('send-btn'),
             currentChannelName: document.getElementById('current-channel-name'),
             onlineCount: document.getElementById('online-count'),
-            starsContainer: document.getElementById('stars-container')
+            starsContainer: document.getElementById('stars-container'),
+            typingIndicator: document.getElementById('typing-indicator')
         };
 
         // --- Initialization ---
@@ -720,22 +867,38 @@
             renderChannels();
             setupEventListeners();
             simulateOnlineUsers();
+            simulateShootingStars();
         }
 
         // --- Visuals ---
         function generateStars() {
-            const count = 50;
+            const count = 80; // Increased count
             for (let i = 0; i < count; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
                 star.style.left = `${Math.random() * 100}%`;
                 star.style.top = `${Math.random() * 100}%`;
-                star.style.width = `${Math.random() * 3 + 1}px`;
-                star.style.height = star.style.width;
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
                 star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
                 star.style.setProperty('--delay', `${Math.random() * 5}s`);
                 els.starsContainer.appendChild(star);
             }
+        }
+
+        function simulateShootingStars() {
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    const star = document.createElement('div');
+                    star.className = 'shooting-star';
+                    star.style.top = `${Math.random() * 60}%`;
+                    star.style.left = `${Math.random() * 80}%`;
+                    star.style.animationDuration = `${Math.random() * 1 + 1}s`;
+                    els.starsContainer.appendChild(star);
+                    setTimeout(() => star.remove(), 2000);
+                }
+            }, 3000);
         }
 
         function simulateOnlineUsers() {
@@ -743,6 +906,12 @@
                 const base = 15;
                 const variance = Math.floor(Math.random() * 35);
                 els.onlineCount.textContent = base + variance;
+                
+                // Random typing simulation
+                if (Math.random() > 0.8) {
+                    els.typingIndicator.style.display = 'flex';
+                    setTimeout(() => els.typingIndicator.style.display = 'none', 3000);
+                }
             }, 5000);
         }
 
@@ -751,24 +920,42 @@
             const saved = localStorage.getItem('jce_chat_user');
             if (saved) {
                 state.user = JSON.parse(saved);
+                // Pre-fill form for visual continuity
+                document.getElementById('fullName').value = state.user.name;
+                document.getElementById('email').value = state.user.email;
+                document.getElementById('dept').value = state.user.dept;
+                document.getElementById('year').value = state.user.year;
                 showChat();
             }
         }
 
-        // Global handleLogin as requested
+        // Global handleLogin
         window.handleLogin = function(event) {
             event.preventDefault();
             const email = document.getElementById('email').value.trim();
+            const name = document.getElementById('fullName').value.trim();
             
             if (!email.endsWith('@jerusalemengg.ac.in')) {
+                // Shake animation
+                const card = document.querySelector('.login-card');
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 500);
+                
                 alert('Please use your valid JCE email (@jerusalemengg.ac.in)');
+                return;
+            }
+            
+            if (!name) {
+                const card = document.querySelector('.login-card');
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 500);
                 return;
             }
 
             const user = {
-                name: document.getElementById('fullName').value || 'JCE Student',
+                name: name,
                 dept: document.getElementById('dept').value || 'CSE',
-                year: document.getElementById('year').value || 'III',
+                year: document.getElementById('year').value || 'I',
                 email: email,
                 id: Date.now().toString()
             };
@@ -849,10 +1036,11 @@
         }
 
         function formatMessage(text) {
-            // Basic Markdown
+            // Enhanced Markdown
             return text
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
                 .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
         }
 
@@ -909,7 +1097,6 @@
             els.messageInput.style.height = 'auto';
 
             try {
-                // Using Amplify.API.graphql for UMD
                 if (typeof Amplify !== 'undefined' && Amplify.API) {
                     await Amplify.API.graphql({
                         query: createMessageMutation,
@@ -966,8 +1153,8 @@
                         query: onCreateMessageSubscription,
                         variables: { filter: { channelId: { eq: channelId } } }
                     }).subscribe({
-                        next: ({ value }) => { // Note: UMD/v5 often uses 'value' instead of 'data' in subscription events, or 'data'
-                            const data = value.data || value; // Handle both
+                        next: ({ value }) => { 
+                            const data = value.data || value; 
                             const msg = data.onCreateMessage;
                             if (msg.userId !== state.user.email) { 
                                 if (!state.messages[channelId]) state.messages[channelId] = [];
@@ -980,14 +1167,12 @@
                     });
                 }
             } catch (err) {
-                console.log('Subscription setup failed (expected if schema mismatch or no Amplify)', err);
+                console.log('Subscription setup failed', err);
             }
         }
 
         // --- Event Listeners ---
         function setupEventListeners() {
-            // Note: onsubmit="handleLogin(event)" is already in HTML as requested
-            
             els.sendBtn.addEventListener('click', sendMessage);
             
             els.messageInput.addEventListener('keypress', (e) => {
