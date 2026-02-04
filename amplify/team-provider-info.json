@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-jcechat-dev-bfc0c-authRole",
+      "UnauthRoleArn": "arn:aws:iam::100403449729:role/amplify-jcechat-dev-bfc0c-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::100403449729:role/amplify-jcechat-dev-bfc0c-authRole",
+      "Region": "ap-south-1",
+      "DeploymentBucketName": "amplify-jcechat-dev-bfc0c-deployment",
+      "UnauthRoleName": "amplify-jcechat-dev-bfc0c-unauthRole",
+      "StackName": "amplify-jcechat-dev-bfc0c",
+      "StackId": "arn:aws:cloudformation:ap-south-1:100403449729:stack/amplify-jcechat-dev-bfc0c/46cdcbb0-01d5-11f1-b920-0a9ba49a4055",
+      "AmplifyAppId": "diibgcvarc0kp"
+    },
+    "categories": {
+      "auth": {
+        "jcechatada26784": {}
+      },
+      "api": {
+        "jcechat": {}
+      }
+    }
+  }
+}
