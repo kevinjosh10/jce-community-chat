@@ -190,9 +190,14 @@
             border-color: var(--success);
         }
         
-        /* Never red borders as requested */
+        /* Green border for invalid as requested */
         .form-input:invalid {
-            border-color: #e5e7eb;
+            border-color: var(--success);
+        }
+        
+        /* Override default invalid style if needed */
+        .form-input:not(:placeholder-shown):invalid {
+            border-color: var(--success);
         }
 
         .btn-primary {
@@ -578,9 +583,11 @@
     <!-- Login View -->
     <div class="login-container" id="login-view">
         <div class="login-card">
-            <form id="login-form" onsubmit="handleLogin(event)">
+            <!-- Removed onsubmit="handleLogin(event)" from HTML to avoid scope issues -->
+            <form id="login-form">
                 <div class="form-group">
                     <label class="form-label">Full Name</label>
+                    <!-- Removed required attribute -->
                     <input type="text" class="form-input" id="fullName" placeholder="Full Name (Ravi Kumar)">
                 </div>
                 
@@ -609,6 +616,7 @@
 
                 <div class="form-group">
                     <label class="form-label">JCE Email</label>
+                    <!-- Removed required attribute -->
                     <input type="email" class="form-input" id="email" placeholder="ravi@jerusalemengg.ac.in" autocomplete="email">
                 </div>
 
@@ -661,6 +669,7 @@
     </div>
 
     <!-- AWS Amplify & Logic -->
+    <!-- Using type="module" to support v6 imports from CDN -->
     <script type="module">
         import { Amplify } from 'https://unpkg.com/aws-amplify@6/dist/aws-amplify.min.mjs';
         import { generateClient } from 'https://unpkg.com/aws-amplify@6/api/dist/aws-amplify-api.min.mjs';
@@ -753,16 +762,18 @@
             }
         }
 
-        // Global handleLogin for onsubmit
+        // Define handleLogin globally so it can be called if needed, 
+        // but we primarily attach it via addEventListener below.
         window.handleLogin = (e) => {
-            e.preventDefault();
+            if(e) e.preventDefault();
+            
             const email = els.emailInput.value.trim();
             const name = document.getElementById('fullName').value.trim();
             
             // Validation
             if (!email.endsWith('@jerusalemengg.ac.in')) {
                 alert('Please use your valid JCE email (@jerusalemengg.ac.in)');
-                els.emailInput.style.borderColor = '#e5e7eb'; // Reset to default, not red
+                els.emailInput.style.borderColor = '#10b981'; // Green as requested
                 return;
             }
             
@@ -988,6 +999,11 @@
 
         // --- Event Listeners ---
         function setupEventListeners() {
+            // Attach login handler robustly
+            if (els.loginForm) {
+                els.loginForm.addEventListener('submit', window.handleLogin);
+            }
+
             els.sendBtn.addEventListener('click', sendMessage);
             
             els.messageInput.addEventListener('keypress', (e) => {
