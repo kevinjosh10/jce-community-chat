@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>JCE LIVE CHAT</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* 
-         * JCE LIVE CHAT - Production Styles
-         * Theme: Cosmic Purple
-         */
         :root {
             --bg-dark: #1e1b4b;
             --bg-darker: #0f0a1e;
@@ -22,7 +21,7 @@
             --text-main: #1f2937;
             --text-light: #6b7280;
             --success: #10b981;
-            --sidebar-width: 280px;
+            --error: #ef4444;
         }
 
         * {
@@ -39,16 +38,8 @@
             height: 100vh;
             overflow: hidden;
             position: relative;
-            animation: skyGradient 60s infinite alternate;
         }
 
-        @keyframes skyGradient {
-            0% { background: radial-gradient(circle at center, #2e1065, #0f0a1e); }
-            50% { background: radial-gradient(circle at center, #1e1b4b, #000000); }
-            100% { background: radial-gradient(circle at center, #312e81, #0f0a1e); }
-        }
-
-        /* --- Background Animation --- */
         .stars-wrapper {
             position: fixed;
             top: 0;
@@ -67,12 +58,21 @@
             opacity: 0;
             animation: twinkle var(--duration) ease-in-out infinite;
             animation-delay: var(--delay);
-            box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+            will-change: opacity, transform;
         }
 
         @keyframes twinkle {
-            0%, 100% { opacity: 0.2; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px rgba(255, 255, 255, 1); }
+
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scale(0.8);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
         }
 
         .layer {
@@ -81,56 +81,39 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background-repeat: repeat;
-            background-position: center;
             animation: drift linear infinite;
             opacity: 0.4;
+            will-change: transform;
         }
 
-        .layer-1 { 
-            animation-duration: 120s; 
+        .layer-1 {
+            animation-duration: 120s;
             background-image: radial-gradient(1px 1px at 10px 10px, white 1px, transparent 0);
             background-size: 50px 50px;
         }
-        .layer-2 { 
-            animation-duration: 160s; 
+
+        .layer-2 {
+            animation-duration: 160s;
             background-image: radial-gradient(1px 1px at 20px 20px, white 1px, transparent 0);
             background-size: 100px 100px;
         }
-        .layer-3 { 
-            animation-duration: 200s; 
+
+        .layer-3 {
+            animation-duration: 200s;
             background-image: radial-gradient(2px 2px at 30px 30px, white 1px, transparent 0);
             background-size: 150px 150px;
         }
 
         @keyframes drift {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
-        /* Shooting Stars */
-        .shooting-star {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            height: 2px;
-            background: linear-gradient(-45deg, rgba(255, 255, 255, 1), rgba(0, 0, 255, 0));
-            filter: drop-shadow(0 0 6px rgba(105, 155, 255, 1));
-            animation: tail 3000ms ease-in-out infinite, shooting 3000ms ease-in-out infinite;
-        }
-
-        @keyframes tail {
-            0% { width: 0; }
-            30% { width: 100px; }
-            100% { width: 0; }
-        }
-
-        @keyframes shooting {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(300px); }
-        }
-
-        /* --- Logo --- */
         .logo-container {
             position: absolute;
             top: clamp(2rem, 5vh, 4rem);
@@ -141,11 +124,6 @@
             width: 100%;
             pointer-events: none;
             animation: float 6s ease-in-out infinite;
-            transition: transform 0.3s;
-        }
-
-        .logo-container:hover {
-            transform: translateX(-50%) scale(1.05);
         }
 
         .logo-text {
@@ -157,16 +135,20 @@
             color: transparent;
             text-shadow: 0 10px 30px rgba(168, 85, 247, 0.3);
             letter-spacing: -0.02em;
-            line-height: 1.1;
-            white-space: nowrap;
         }
 
         @keyframes float {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-20px); }
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(-20px);
+            }
         }
 
-        /* --- Login Form --- */
         .login-container {
             position: absolute;
             bottom: 0;
@@ -182,24 +164,21 @@
         .login-card {
             background: var(--glass);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
             padding: 2rem;
             width: 100%;
             max-width: 480px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.5);
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
-        /* Floating Labels */
         .form-group {
             margin-bottom: 1.5rem;
             position: relative;
         }
 
-        .form-input, .form-select {
+        .form-input,
+        .form-select {
             width: 100%;
             padding: 1rem;
             padding-top: 1.5rem;
@@ -225,16 +204,17 @@
             transform-origin: left top;
         }
 
-        .form-input:focus, .form-select:focus {
+        .form-input:focus,
+        .form-select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
         }
 
-        .form-input:focus + .form-label,
-        .form-input:not(:placeholder-shown) + .form-label,
-        .form-select:focus + .form-label,
-        .form-select:not([value=""]) + .form-label {
+        .form-input:focus+.form-label,
+        .form-input:not(:placeholder-shown)+.form-label,
+        .form-select:focus+.form-label,
+        .form-select:not([value=""])+.form-label {
             transform: translateY(-0.75rem) scale(0.75);
             color: var(--primary);
             font-weight: 600;
@@ -243,20 +223,33 @@
         .form-input.valid {
             border-color: var(--success);
         }
-        
-        .form-input:invalid {
-            border-color: #e5e7eb;
-        }
 
         .shake {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
         }
 
         @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
         }
 
         .btn-primary {
@@ -274,26 +267,39 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            position: relative;
-            overflow: hidden;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
         }
-        
+
         .btn-primary:hover .rocket-icon {
             animation: rocketShake 0.5s ease-in-out infinite;
         }
 
         @keyframes rocketShake {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-10deg); }
-            75% { transform: rotate(10deg); }
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(-10deg);
+            }
+
+            75% {
+                transform: rotate(10deg);
+            }
         }
 
-        /* --- Chat Interface --- */
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .chat-interface {
             position: fixed;
             top: 0;
@@ -315,22 +321,19 @@
             transform: scale(1);
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
+
         ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(var(--primary), var(--primary-light)); 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary); 
+            background: #f1f1f1;
         }
 
-        /* Sidebar */
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--primary), var(--primary-light));
+            border-radius: 4px;
+        }
+
         .sidebar {
             width: 28%;
             min-width: 250px;
@@ -363,7 +366,6 @@
             justify-content: center;
             font-weight: 700;
             font-size: 1.125rem;
-            box-shadow: 0 4px 10px rgba(168, 85, 247, 0.3);
         }
 
         .user-info h3 {
@@ -406,16 +408,14 @@
             background: white;
             transform: translateX(4px);
             color: var(--primary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .channel-btn.active {
             background: white;
             color: var(--primary);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             font-weight: 700;
         }
-        
+
         .channel-btn.active::before {
             content: '';
             position: absolute;
@@ -428,7 +428,6 @@
             border-radius: 0 4px 4px 0;
         }
 
-        /* Main Chat Area */
         .main-chat {
             flex: 1;
             display: flex;
@@ -444,7 +443,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             z-index: 10;
         }
@@ -457,6 +456,37 @@
             gap: 0.5rem;
         }
 
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        .connection-status.online {
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .connection-status.offline {
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .connection-status.connecting {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
         .live-indicator {
             display: flex;
             align-items: center;
@@ -467,7 +497,6 @@
             background: rgba(16, 185, 129, 0.1);
             padding: 0.25rem 0.75rem;
             border-radius: 999px;
-            cursor: help;
         }
 
         .dot {
@@ -479,9 +508,17 @@
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
         }
 
         .messages-container {
@@ -512,20 +549,26 @@
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .message-bubble {
             padding: 0.75rem 1rem;
             border-radius: 16px;
-            position: relative;
             word-wrap: break-word;
             line-height: 1.5;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s;
         }
-        
+
         .message-bubble:hover {
             transform: scale(1.01);
         }
@@ -553,22 +596,30 @@
 
         .message.own .message-meta {
             justify-content: flex-end;
-            color: rgba(255,255,255,0.9);
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .message.other .message-meta {
             color: var(--text-light);
         }
-        
+
         .sender-name {
             font-weight: 600;
             font-size: 0.75rem;
             margin-bottom: 2px;
             color: var(--text-light);
         }
-        
+
         .message.own .sender-name {
             display: none;
+        }
+
+        .message.pending .message-bubble {
+            opacity: 0.7;
+        }
+
+        .message.failed .message-bubble {
+            border: 2px solid var(--error);
         }
 
         .input-area {
@@ -578,7 +629,6 @@
             display: flex;
             gap: 1rem;
             align-items: flex-end;
-            position: relative;
         }
 
         .chat-input {
@@ -617,35 +667,39 @@
             background: var(--bg-dark);
             transform: scale(1.05);
         }
-        
-        .typing-indicator {
-            position: absolute;
-            top: -30px;
-            left: 1.5rem;
-            font-size: 0.75rem;
-            color: var(--text-light);
-            display: none;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .typing-dot {
-            width: 4px;
-            height: 4px;
-            background: var(--text-light);
-            border-radius: 50%;
-            animation: typingBounce 1s infinite;
-        }
-        
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        
-        @keyframes typingBounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        /* --- Mobile Responsive --- */
+        .status-message {
+            text-align: center;
+            padding: 2rem;
+            color: #9ca3af;
+        }
+
+        .status-message.error {
+            color: var(--error);
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
         @media (max-width: 768px) {
             .chat-interface {
                 flex-direction: column;
@@ -661,7 +715,6 @@
                 overflow-x: auto;
                 padding: 0.5rem;
                 background: white;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
             }
 
             .sidebar-header {
@@ -682,7 +735,7 @@
                 font-size: 0.875rem;
                 background: #f3f4f6;
             }
-            
+
             .channel-btn.active::before {
                 display: none;
             }
@@ -693,46 +746,56 @@
             }
 
             .main-chat {
-                height: calc(100% - 60px); /* Approx height of bottom bar */
+                height: calc(100% - 60px);
                 order: 1;
             }
 
             .logo-text {
                 font-size: 3rem;
             }
-            
+
             .login-container {
                 padding-bottom: 2rem;
             }
-            
+
             .input-area {
                 padding: 1rem;
             }
         }
 
-        /* Markdown Styles */
-        .message-bubble strong { font-weight: 700; }
-        .message-bubble em { font-style: italic; }
-        .message-bubble a { text-decoration: underline; color: inherit; }
-        .message-bubble code { background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 4px; font-family: monospace; }
+        .message-bubble strong {
+            font-weight: 700;
+        }
+
+        .message-bubble em {
+            font-style: italic;
+        }
+
+        .message-bubble a {
+            text-decoration: underline;
+            color: inherit;
+        }
+
+        .message-bubble code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
     </style>
 </head>
-<body>
 
-    <!-- Background -->
+<body>
     <div class="stars-wrapper" id="stars-container">
         <div class="layer layer-1"></div>
         <div class="layer layer-2"></div>
         <div class="layer layer-3"></div>
-        <!-- Stars generated by JS -->
     </div>
 
-    <!-- Logo -->
     <div class="logo-container">
         <h1 class="logo-text">JCE LIVE CHAT</h1>
     </div>
 
-    <!-- Login View -->
     <div class="login-container" id="login-view">
         <form id="login-form">
             <div class="login-card">
@@ -740,7 +803,6 @@
                     <input type="text" class="form-input" id="fullName" placeholder=" " autocomplete="name">
                     <label class="form-label">Full Name (Optional)</label>
                 </div>
-                
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <select class="form-select" id="dept">
@@ -765,12 +827,10 @@
                         <label class="form-label">Year</label>
                     </div>
                 </div>
-
                 <div class="form-group">
                     <input type="email" class="form-input" id="email" placeholder=" " autocomplete="email" required>
                     <label class="form-label">JCE Email (@jerusalemengg.ac.in)</label>
                 </div>
-
                 <button type="submit" class="btn-primary" id="join-btn">
                     Join Chat <span class="rocket-icon">🚀</span>
                 </button>
@@ -778,455 +838,342 @@
         </form>
     </div>
 
-    <!-- Chat Interface -->
     <div class="chat-interface" id="chat-view">
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="user-profile">
                     <div class="avatar" id="user-avatar">RK</div>
                     <div class="user-info">
-                        <h3 id="user-name-display">Ravi Kumar</h3>
-                        <p id="user-dept-display">CSE - IV Year</p>
+                        <h3 id="user-name-display">User</h3>
+                        <p id="user-dept-display">Student</p>
                     </div>
                 </div>
             </div>
-            <div class="channels-list" id="channels-list">
-                <!-- Channels injected by JS -->
-            </div>
+            <div class="channels-list" id="channels-list"></div>
         </aside>
-
         <main class="main-chat">
             <header class="chat-header">
                 <div class="channel-info">
                     <h2 id="current-channel-name">📢 General</h2>
                 </div>
-                <div class="live-indicator" title="Live Users Online">
-                    <div class="dot"></div>
-                    <span id="online-count">42</span> Online
+                <div class="header-actions">
+                    <div class="connection-status connecting" id="connection-status">
+                        <div class="dot"></div><span>Connecting...</span>
+                    </div>
+                    <div class="live-indicator">
+                        <div class="dot"></div><span id="online-count">0</span> Online
+                    </div>
+                    <button class="logout-btn" id="logout-btn">Logout</button>
                 </div>
             </header>
-
-            <div class="messages-container" id="messages-container">
-                <!-- Messages injected by JS -->
-            </div>
-
+            <div class="messages-container" id="messages-container"></div>
             <div class="input-area">
-                <div class="typing-indicator" id="typing-indicator">
-                    <span>Someone is typing</span>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-                <textarea class="chat-input" id="message-input" placeholder="Type a message..." rows="1" maxlength="1000"></textarea>
+                <textarea class="chat-input" id="message-input" placeholder="Type a message..." rows="1"
+                    maxlength="1000"></textarea>
                 <button class="send-btn" id="send-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
                 </button>
             </div>
         </main>
     </div>
 
-    <!-- AWS Amplify (UMD v5 for stability with global access) -->
     <script src="https://unpkg.com/aws-amplify@5.3.11/dist/aws-amplify.min.js"></script>
-
     <script>
-        // --- Configuration ---
-        const awsConfig = {
-            aws_appsync_graphqlEndpoint: 'https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql',
-            aws_appsync_region: 'ap-south-1',
-            aws_appsync_authenticationType: 'API_KEY',
-            aws_appsync_apiKey: 'da2-5r3f3gtz5rfjvc6tsi6a4e6gwu'
-        };
+        (function () {
+            'use strict';
 
-        // Initialize Amplify
-        if (window.aws_amplify) {
-            window.aws_amplify.Amplify.configure(awsConfig);
-        } else {
-            console.error("AWS Amplify not loaded");
-            alert("Error loading chat system. Please refresh.");
-        }
+            // --- Configuration ---
+            const AWS_CONFIG = {
+                aws_appsync_graphqlEndpoint: 'https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql',
+                aws_appsync_region: 'ap-south-1',
+                aws_appsync_authenticationType: 'API_KEY',
+                aws_appsync_apiKey: 'da2-5r3f3gtz5rfjvc6tsi6a4e6gwu'
+            };
 
-        // --- State ---
-        const state = {
-            user: null,
-            currentChannel: 'General',
-            channels: [
+            const CHANNELS = [
                 { id: 'General', icon: '📢', name: 'General' },
                 { id: 'Announcements', icon: '📫', name: 'Announcements' },
                 { id: 'Projects', icon: '💻', name: 'Projects' },
                 { id: 'LinkedIn', icon: '💼', name: 'LinkedIn' },
                 { id: 'Startups', icon: '🚀', name: 'Startups' },
                 { id: 'Academics', icon: '🎓', name: 'Academics' }
-            ],
-            messages: {}, // Cache: { channelId: [msgs] }
-            subscription: null
-        };
+            ];
 
-        // --- DOM Elements ---
-        const els = {
-            loginView: document.getElementById('login-view'),
-            chatView: document.getElementById('chat-view'),
-            loginForm: document.getElementById('login-form'),
-            emailInput: document.getElementById('email'),
-            channelsList: document.getElementById('channels-list'),
-            messagesContainer: document.getElementById('messages-container'),
-            messageInput: document.getElementById('message-input'),
-            sendBtn: document.getElementById('send-btn'),
-            currentChannelName: document.getElementById('current-channel-name'),
-            onlineCount: document.getElementById('online-count'),
-            starsContainer: document.getElementById('stars-container'),
-            typingIndicator: document.getElementById('typing-indicator')
-        };
-
-        // --- GraphQL Operations ---
-        const listMessagesQuery = `
-            query ListMessages($filter: ModelMessageFilterInput, $limit: Int) {
-                listMessages(filter: $filter, limit: $limit) {
-                    items {
-                        id
-                        channelId
-                        content
-                        userId
-                        userName
-                        createdAt
-                    }
-                }
-            }
-        `;
-
-        const createMessageMutation = `
-            mutation CreateMessage($input: CreateMessageInput!) {
-                createMessage(input: $input) {
-                    id
-                    channelId
-                    content
-                    userId
-                    userName
-                    createdAt
-                }
-            }
-        `;
-
-        const onCreateMessageSubscription = `
-            subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) {
-                onCreateMessage(filter: $filter) {
-                    id
-                    channelId
-                    content
-                    userId
-                    userName
-                    createdAt
-                }
-            }
-        `;
-
-        // --- Initialization ---
-        function init() {
-            generateStars();
-            checkSession();
-            renderChannels();
-            setupEventListeners();
-            simulateOnlineUsers();
-            simulateShootingStars();
-        }
-
-        // --- Visuals ---
-        function generateStars() {
-            const count = 80;
-            for (let i = 0; i < count; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = `${Math.random() * 100}%`;
-                star.style.top = `${Math.random() * 100}%`;
-                const size = Math.random() * 3 + 1;
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-                star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
-                star.style.setProperty('--delay', `${Math.random() * 5}s`);
-                els.starsContainer.appendChild(star);
-            }
-        }
-
-        function simulateShootingStars() {
-            setInterval(() => {
-                if (Math.random() > 0.7) {
-                    const star = document.createElement('div');
-                    star.className = 'shooting-star';
-                    star.style.top = `${Math.random() * 60}%`;
-                    star.style.left = `${Math.random() * 80}%`;
-                    star.style.animationDuration = `${Math.random() * 1 + 1}s`;
-                    els.starsContainer.appendChild(star);
-                    setTimeout(() => star.remove(), 2000);
-                }
-            }, 3000);
-        }
-
-        function simulateOnlineUsers() {
-            setInterval(() => {
-                const base = 15;
-                const variance = Math.floor(Math.random() * 35);
-                els.onlineCount.textContent = base + variance;
-            }, 5000);
-        }
-
-        // --- Auth & Session ---
-        function checkSession() {
-            const saved = localStorage.getItem('jce_chat_user');
-            if (saved) {
-                try {
-                    state.user = JSON.parse(saved);
-                    showChat();
-                } catch (e) {
-                    localStorage.removeItem('jce_chat_user');
-                }
-            }
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value.trim().toLowerCase();
-            let name = document.getElementById('fullName').value.trim();
-            const dept = document.getElementById('dept').value || 'Student';
-            const year = document.getElementById('year').value || '';
-            
-            // Validation
-            if (!email.endsWith('@jerusalemengg.ac.in')) {
-                const card = document.querySelector('.login-card');
-                card.classList.add('shake');
-                setTimeout(() => card.classList.remove('shake'), 500);
-                alert('Access Restricted: Please use your official JCE email (@jerusalemengg.ac.in)');
-                return;
-            }
-
-            // Auto-generate name if empty
-            if (!name) {
-                const namePart = email.split('@')[0];
-                name = namePart.split('.').map(part => 
-                    part.charAt(0).toUpperCase() + part.slice(1)
-                ).join(' ');
-            }
-
-            const user = {
-                name: name,
-                dept: dept,
-                year: year,
-                email: email,
-                id: email // Use email as unique ID
+            const QUERIES = {
+                list: `query ListMessages($filter: ModelMessageFilterInput, $limit: Int) { listMessages(filter: $filter, limit: $limit) { items { id channelId content userId userName createdAt } } }`,
+                create: `mutation CreateMessage($input: CreateMessageInput!) { createMessage(input: $input) { id channelId content userId userName createdAt } }`,
+                subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channelId content userId userName createdAt } }`
             };
 
-            localStorage.setItem('jce_chat_user', JSON.stringify(user));
-            state.user = user;
-            showChat();
-        }
+            // --- State ---
+            const state = { user: null, currentChannel: 'General', messages: {}, subscription: null, isOnline: false, amplifyReady: false };
+            let API = null;
 
-        function showChat() {
-            // Update User Profile UI
-            const initials = state.user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('user-avatar').textContent = initials;
-            document.getElementById('user-name-display').textContent = state.user.name;
-            document.getElementById('user-dept-display').textContent = `${state.user.dept} ${state.user.year ? '- ' + state.user.year + ' Year' : ''}`;
+            // --- DOM ---
+            const $ = id => document.getElementById(id);
+            const els = {
+                loginView: $('login-view'), chatView: $('chat-view'), loginForm: $('login-form'),
+                emailInput: $('email'), channelsList: $('channels-list'), messagesContainer: $('messages-container'),
+                messageInput: $('message-input'), sendBtn: $('send-btn'), currentChannelName: $('current-channel-name'),
+                onlineCount: $('online-count'), starsContainer: $('stars-container'), connectionStatus: $('connection-status'),
+                logoutBtn: $('logout-btn')
+            };
 
-            // Transition
-            els.loginView.style.opacity = '0';
-            els.loginView.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                els.loginView.style.display = 'none';
-                els.chatView.classList.add('active');
-                loadChannel(state.currentChannel);
-            }, 500);
-        }
+            // --- Helpers ---
+            function getCache(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
+            function setCache(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch { } }
+            function uuid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
 
-        // --- Chat Logic ---
-        function renderChannels() {
-            els.channelsList.innerHTML = state.channels.map(ch => `
-                <button class="channel-btn ${ch.id === state.currentChannel ? 'active' : ''}" 
-                        onclick="switchChannel('${ch.id}')">
-                    <span>${ch.icon}</span> ${ch.name}
-                </button>
-            `).join('');
-        }
-
-        window.switchChannel = (channelId) => {
-            if (state.currentChannel === channelId) return;
-            state.currentChannel = channelId;
-            
-            // Update UI
-            const ch = state.channels.find(c => c.id === channelId);
-            els.currentChannelName.textContent = `${ch.icon} ${ch.name}`;
-            renderChannels();
-            
-            loadChannel(channelId);
-        };
-
-        async function loadChannel(channelId) {
-            // Clear current messages view
-            els.messagesContainer.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af;">Loading messages...</div>';
-            
-            // Unsubscribe previous
-            if (state.subscription) {
-                state.subscription.unsubscribe();
-                state.subscription = null;
+            function setConnectionStatus(status) {
+                const el = els.connectionStatus;
+                el.className = 'connection-status ' + status;
+                const labels = { online: '● Connected', offline: '○ Offline', connecting: '◐ Connecting...' };
+                el.innerHTML = `<div class="dot"></div><span>${labels[status]}</span>`;
+                state.isOnline = status === 'online';
             }
 
-            // Fetch Messages
-            try {
-                const result = await window.aws_amplify.Amplify.API.graphql({
-                    query: listMessagesQuery,
-                    variables: { 
-                        filter: { channelId: { eq: channelId } },
-                        limit: 100
-                    }
-                });
-                
-                const items = result.data.listMessages.items;
-                // Sort by createdAt
-                items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-                
-                state.messages[channelId] = items;
-                renderMessages();
-                
-            } catch (err) {
-                console.error('Error fetching messages:', err);
-                els.messagesContainer.innerHTML = '<div style="text-align:center; padding:2rem; color:#ef4444;">Failed to load messages.</div>';
+            function formatMessage(text) {
+                if (!text) return '';
+                return text.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>')
+                    .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
             }
 
-            // Subscribe to new messages
-            subscribeToChannel(channelId);
-        }
+            // --- Init Amplify with retry ---
+            async function initAmplify() {
+                setConnectionStatus('connecting');
+                let attempts = 0;
+                const maxAttempts = 15;
 
-        function subscribeToChannel(channelId) {
-            try {
-                state.subscription = window.aws_amplify.Amplify.API.graphql({
-                    query: onCreateMessageSubscription,
-                    variables: { filter: { channelId: { eq: channelId } } }
-                }).subscribe({
-                    next: ({ value }) => {
-                        const msg = value.data.onCreateMessage;
-                        if (msg.channelId === state.currentChannel) {
-                            // Deduplicate
-                            const exists = state.messages[state.currentChannel].some(m => m.id === msg.id);
-                            if (!exists) {
-                                state.messages[state.currentChannel].push(msg);
-                                renderMessages();
-                                // Sound effect for others' messages
-                                if (msg.userId !== state.user.email) {
-                                    // Optional sound
-                                }
+                return new Promise((resolve, reject) => {
+                    const check = () => {
+                        attempts++;
+                        if (window.aws_amplify?.Amplify) {
+                            try {
+                                window.aws_amplify.Amplify.configure(AWS_CONFIG);
+                                API = window.aws_amplify.API;
+                                state.amplifyReady = true;
+                                setConnectionStatus('online');
+                                console.log('✅ Amplify initialized');
+                                resolve();
+                            } catch (e) {
+                                console.error('Amplify config error:', e);
+                                setConnectionStatus('offline');
+                                reject(e);
                             }
+                        } else if (attempts < maxAttempts) {
+                            setTimeout(check, 300);
+                        } else {
+                            setConnectionStatus('offline');
+                            reject(new Error('Amplify load timeout'));
                         }
-                    },
-                    error: (err) => console.error('Subscription error:', err)
+                    };
+                    check();
                 });
-            } catch (err) {
-                console.error('Subscription setup failed:', err);
-            }
-        }
-
-        function renderMessages() {
-            const msgs = state.messages[state.currentChannel] || [];
-            
-            if (msgs.length === 0) {
-                els.messagesContainer.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af;">No messages yet. Start the conversation!</div>';
-                return;
             }
 
-            els.messagesContainer.innerHTML = msgs.map(msg => {
-                const isOwn = msg.userId === state.user.email; 
-                return `
-                    <div class="message ${isOwn ? 'own' : 'other'}">
-                        ${!isOwn ? `<div class="sender-name">${msg.userName}</div>` : ''}
-                        <div class="message-bubble">
-                            ${formatMessage(msg.content)}
-                        </div>
-                        <div class="message-meta">
-                            <span>${new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            scrollToBottom();
-        }
-
-        function formatMessage(text) {
-            if (!text) return '';
-            // Basic sanitization
-            const safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            // Markdown-like formatting
-            return safeText
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/`(.*?)`/g, '<code>$1</code>')
-                .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
-        }
-
-        function scrollToBottom() {
-            els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const content = els.messageInput.value.trim();
-            if (!content) return;
-
-            const message = {
-                channelId: state.currentChannel,
-                content: content,
-                userId: state.user.email,
-                userName: state.user.name,
-                createdAt: new Date().toISOString(),
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
-            };
-
-            // Optimistic Update
-            if (!state.messages[state.currentChannel]) state.messages[state.currentChannel] = [];
-            state.messages[state.currentChannel].push(message);
-            renderMessages();
-            
-            // Clear Input
-            els.messageInput.value = '';
-            els.messageInput.style.height = 'auto';
-
-            try {
-                await window.aws_amplify.Amplify.API.graphql({
-                    query: createMessageMutation,
-                    variables: { input: message }
-                });
-            } catch (err) {
-                console.error('Error sending message:', err);
-                // Optionally show error state on the message
+            // --- GraphQL Operations ---
+            async function fetchMessages(channelId) {
+                if (!API) throw new Error('API not ready');
+                const result = await API.graphql({ query: QUERIES.list, variables: { filter: { channelId: { eq: channelId } }, limit: 100 } });
+                return result.data.listMessages.items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             }
-        }
 
-        // --- Event Listeners ---
-        function setupEventListeners() {
-            els.loginForm.addEventListener('submit', handleLogin);
+            async function createMessage(msg) {
+                if (!API) throw new Error('API not ready');
+                return API.graphql({ query: QUERIES.create, variables: { input: msg } });
+            }
 
-            els.sendBtn.addEventListener('click', sendMessage);
-            
-            els.messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
+            function subscribeToChannel(channelId) {
+                if (state.subscription) { state.subscription.unsubscribe(); state.subscription = null; }
+                if (!API) return;
+                try {
+                    state.subscription = API.graphql({ query: QUERIES.subscribe, variables: { filter: { channelId: { eq: channelId } } } })
+                        .subscribe({
+                            next: ({ value }) => {
+                                const msg = value.data.onCreateMessage;
+                                if (msg.channelId === state.currentChannel) {
+                                    const msgs = state.messages[state.currentChannel] || [];
+                                    if (!msgs.some(m => m.id === msg.id)) {
+                                        msgs.push(msg);
+                                        state.messages[state.currentChannel] = msgs;
+                                        setCache('jce_messages_' + state.currentChannel, msgs.slice(-50));
+                                        renderMessages();
+                                    }
+                                }
+                            },
+                            error: (e) => { console.error('Subscription error:', e); setConnectionStatus('offline'); }
+                        });
+                } catch (e) { console.error('Subscribe failed:', e); }
+            }
+
+            // --- UI Rendering ---
+            function generateStars() {
+                const count = window.innerWidth < 768 ? 40 : 80;
+                for (let i = 0; i < count; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;width:${Math.random() * 3 + 1}px;height:${Math.random() * 3 + 1}px;--duration:${Math.random() * 3 + 2}s;--delay:${Math.random() * 5}s;`;
+                    els.starsContainer.appendChild(star);
                 }
-            });
+            }
 
-            els.messageInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
+            function renderChannels() {
+                els.channelsList.innerHTML = CHANNELS.map(ch =>
+                    `<button class="channel-btn ${ch.id === state.currentChannel ? 'active' : ''}" data-channel="${ch.id}"><span>${ch.icon}</span> ${ch.name}</button>`
+                ).join('');
+            }
 
-            els.emailInput.addEventListener('input', (e) => {
-                if (e.target.value.includes('@jerusalemengg.ac.in')) {
-                    e.target.classList.add('valid');
-                    e.target.style.borderColor = 'var(--success)';
+            function renderMessages() {
+                const msgs = state.messages[state.currentChannel] || [];
+                if (!msgs.length) {
+                    els.messagesContainer.innerHTML = '<div class="status-message">No messages yet. Start the conversation!</div>';
+                    return;
+                }
+                els.messagesContainer.innerHTML = msgs.map(msg => {
+                    const isOwn = msg.userId === state.user?.email;
+                    const statusClass = msg.pending ? 'pending' : (msg.failed ? 'failed' : '');
+                    return `<div class="message ${isOwn ? 'own' : 'other'} ${statusClass}">
+                    ${!isOwn ? `<div class="sender-name">${msg.userName || 'Anonymous'}</div>` : ''}
+                    <div class="message-bubble">${formatMessage(msg.content)}</div>
+                    <div class="message-meta"><span>${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div>
+                </div>`;
+                }).join('');
+                els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
+            }
+
+            // --- Channel & Messages ---
+            async function loadChannel(channelId) {
+                state.currentChannel = channelId;
+                const ch = CHANNELS.find(c => c.id === channelId);
+                els.currentChannelName.textContent = `${ch.icon} ${ch.name}`;
+                renderChannels();
+
+                // Show cached first
+                const cached = getCache('jce_messages_' + channelId);
+                if (cached) { state.messages[channelId] = cached; renderMessages(); }
+                else { els.messagesContainer.innerHTML = '<div class="status-message">Loading messages...</div>'; }
+
+                if (state.amplifyReady) {
+                    try {
+                        const msgs = await fetchMessages(channelId);
+                        state.messages[channelId] = msgs;
+                        setCache('jce_messages_' + channelId, msgs.slice(-50));
+                        renderMessages();
+                        setConnectionStatus('online');
+                    } catch (e) {
+                        console.error('Fetch error:', e);
+                        setConnectionStatus('offline');
+                        if (!cached) els.messagesContainer.innerHTML = '<div class="status-message error">Failed to load messages. Using offline mode.</div>';
+                    }
+                    subscribeToChannel(channelId);
+                }
+            }
+
+            async function sendMessage() {
+                const content = els.messageInput.value.trim();
+                if (!content || !state.user) return;
+
+                const msg = { id: uuid(), channelId: state.currentChannel, content, userId: state.user.email, userName: state.user.name, createdAt: new Date().toISOString(), pending: true };
+
+                if (!state.messages[state.currentChannel]) state.messages[state.currentChannel] = [];
+                state.messages[state.currentChannel].push(msg);
+                renderMessages();
+                els.messageInput.value = '';
+                els.messageInput.style.height = 'auto';
+
+                if (state.amplifyReady) {
+                    try {
+                        const { pending, failed, ...cleanMsg } = msg;
+                        await createMessage(cleanMsg);
+                        msg.pending = false;
+                        setCache('jce_messages_' + state.currentChannel, state.messages[state.currentChannel].slice(-50));
+                        renderMessages();
+                    } catch (e) {
+                        console.error('Send error:', e);
+                        msg.pending = false; msg.failed = true;
+                        renderMessages();
+                    }
                 } else {
-                    e.target.classList.remove('valid');
-                    e.target.style.borderColor = '#e5e7eb';
+                    msg.pending = false; msg.failed = true;
+                    setCache('jce_messages_' + state.currentChannel, state.messages[state.currentChannel].slice(-50));
+                    renderMessages();
                 }
-            });
-        }
+            }
 
-        // Run
-        init();
+            // --- Auth ---
+            function checkSession() {
+                const saved = getCache('jce_chat_user');
+                if (saved) { state.user = saved; showChat(); }
+            }
 
+            function showChat() {
+                const initials = state.user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                $('user-avatar').textContent = initials;
+                $('user-name-display').textContent = state.user.name;
+                $('user-dept-display').textContent = `${state.user.dept}${state.user.year ? ' - ' + state.user.year + ' Year' : ''}`;
+                els.loginView.style.opacity = '0';
+                els.loginView.style.transform = 'translateY(20px)';
+                setTimeout(() => { els.loginView.style.display = 'none'; els.chatView.classList.add('active'); loadChannel(state.currentChannel); }, 500);
+            }
+
+            function handleLogin(e) {
+                e.preventDefault();
+                const email = els.emailInput.value.trim().toLowerCase();
+                let name = $('fullName').value.trim();
+                const dept = $('dept').value || 'Student';
+                const year = $('year').value || '';
+
+                if (!email.endsWith('@jerusalemengg.ac.in')) {
+                    document.querySelector('.login-card').classList.add('shake');
+                    setTimeout(() => document.querySelector('.login-card').classList.remove('shake'), 500);
+                    alert('Please use your official JCE email (@jerusalemengg.ac.in)');
+                    return;
+                }
+                if (!name) name = email.split('@')[0].split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+
+                state.user = { name, dept, year, email, id: email };
+                setCache('jce_chat_user', state.user);
+                showChat();
+            }
+
+            function logout() {
+                localStorage.removeItem('jce_chat_user');
+                if (state.subscription) state.subscription.unsubscribe();
+                location.reload();
+            }
+
+            // --- Event Listeners ---
+            function setupEvents() {
+                els.loginForm.addEventListener('submit', handleLogin);
+                els.sendBtn.addEventListener('click', sendMessage);
+                els.messageInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+                els.messageInput.addEventListener('input', function () { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
+                els.emailInput.addEventListener('input', e => { e.target.classList.toggle('valid', e.target.value.includes('@jerusalemengg.ac.in')); });
+                els.channelsList.addEventListener('click', e => { const btn = e.target.closest('.channel-btn'); if (btn) loadChannel(btn.dataset.channel); });
+                els.logoutBtn.addEventListener('click', logout);
+                setInterval(() => { els.onlineCount.textContent = Math.floor(15 + Math.random() * 35); }, 5000);
+            }
+
+            // --- Init ---
+            async function init() {
+                generateStars();
+                renderChannels();
+                setupEvents();
+                checkSession();
+                try { await initAmplify(); } catch (e) { console.error('Init failed:', e); }
+            }
+
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+            else init();
+        })();
     </script>
 </body>
+
 </html>
