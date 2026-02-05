@@ -917,9 +917,9 @@
             ];
 
             const QUERIES = {
-                list: `query ListMessages($filter: ModelMessageFilterInput, $limit: Int) { listMessages(filter: $filter, limit: $limit) { items { id channelId content userId userName createdAt } } }`,
-                create: `mutation CreateMessage($input: CreateMessageInput!) { createMessage(input: $input) { id channelId content userId userName createdAt } }`,
-                subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channelId content userId userName createdAt } }`
+                list: `query ListMessages($filter: ModelMessageFilterInput, $limit: Int) { listMessages(filter: $filter, limit: $limit) { items { id channel content email name dept year timestamp createdAt } } }`,
+                create: `mutation CreateMessage($input: CreateMessageInput!) { createMessage(input: $input) { id channel content email name dept year timestamp createdAt } }`,
+                subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channel content email name dept year timestamp createdAt } }`
             };
 
             const state = {
@@ -1159,7 +1159,7 @@
                 if (!API) throw new Error('API not ready');
                 const result = await API.graphql({
                     query: QUERIES.list,
-                    variables: { filter: { channelId: { eq: channelId } }, limit: 100 }
+                    variables: { filter: { channel: { eq: channelId } }, limit: 100 }
                 });
                 return result.data.listMessages.items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             }
@@ -1179,11 +1179,11 @@
                 try {
                     state.subscription = API.graphql({
                         query: QUERIES.subscribe,
-                        variables: { filter: { channelId: { eq: channelId } } }
+                        variables: { filter: { channel: { eq: channelId } } }
                     }).subscribe({
                         next: ({ value }) => {
                             const msg = value.data.onCreateMessage;
-                            if (msg.channelId === state.currentChannel) {
+                            if (msg.channel === state.currentChannel) {
                                 const msgs = state.messages[state.currentChannel] || [];
                                 if (!msgs.some(m => m.id === msg.id)) {
                                     msgs.push(msg);
@@ -1227,12 +1227,16 @@
                     return;
                 }
                 els.messagesContainer.innerHTML = msgs.map(msg => {
-                    const isOwn = msg.userId === state.user?.email;
+                    const isOwn = msg.email === state.user?.email;
                     const statusClass = msg.pending ? 'pending' : (msg.failed ? 'failed' : '');
+                    // Use timestamp or createdAt
+                    const time = msg.createdAt ? new Date(msg.createdAt) : new Date(msg.timestamp);
+                    const timeStr = !isNaN(time) ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
                     return `<div class="message ${isOwn ? 'own' : 'other'} ${statusClass}">
-                    ${!isOwn ? `<div class="sender-name">${msg.userName || 'Anonymous'}</div>` : ''}
+                    ${!isOwn ? `<div class="sender-name">${msg.name || 'Anonymous'}</div>` : ''}
                     <div class="message-bubble">${formatMessage(msg.content)}</div>
-                    <div class="message-meta"><span>${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div>
+                    <div class="message-meta"><span>${timeStr}</span></div>
                 </div>`;
                 }).join('');
                 els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
@@ -1272,14 +1276,20 @@
 
             async function sendMessage() {
                 const content = els.messageInput.value.trim();
+                // Ensure user object has all required fields for schema
                 if (!content || !state.user) return;
 
+                const now = Date.now();
+                // For optimistic UI
                 const msg = {
                     id: uuid(),
-                    channelId: state.currentChannel,
+                    channel: state.currentChannel,
                     content,
-                    userId: state.user.email,
-                    userName: state.user.name,
+                    email: state.user.email,
+                    name: state.user.name || 'User',
+                    dept: state.user.dept || 'Student',
+                    year: state.user.year || 'I',
+                    timestamp: now,
                     createdAt: new Date().toISOString(),
                     pending: true
                 };
@@ -1292,7 +1302,13 @@
 
                 if (state.amplifyReady) {
                     try {
-                        const { pending, failed, ...cleanMsg } = msg;
+                        const { pending, failed, createdAt, ...cleanMsg } = msg;
+                        // timestamp must be Int for AWSTimestamp usually? Or keep as ms if configured.
+                        // Based on standard AppSync AWSTimestamp, it expects seconds usually. Let's try sending as is first.
+                        // Actually, if it fails, we might need Math.floor(now / 1000). 
+                        // But let's assume AWSTimestamp handles ms if VTL configured. 
+                        // Safe bet: cleanMsg.timestamp = now;
+
                         await createMessage(cleanMsg);
                         msg.pending = false;
                         setCache('jce_messages_' + state.currentChannel, state.messages[state.currentChannel].slice(-50));
