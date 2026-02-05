@@ -885,8 +885,8 @@
         </main>
     </div>
 
-    <!-- AWS Amplify -->
-    <script src="https://unpkg.com/aws-amplify@4.3.46/aws-amplify.min.js"></script>
+    <!-- AWS Amplify v4.3.46 via Cloudflare CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-amplify/4.3.46/aws-amplify.min.js"></script>
 
     <script>
         (function () {
@@ -942,8 +942,11 @@
             }
 
             function waitForAmplify(callback, retries = 20, delay = 250) {
-                if (window.aws_amplify && window.aws_amplify.Amplify) {
-                    callback();
+                // v4.x: window.aws_amplify.Amplify OR window.Amplify
+                // v5.x: window.aws_amplify.Amplify
+                const amplifyObj = (window.aws_amplify && window.aws_amplify.Amplify) || window.Amplify;
+                if (amplifyObj) {
+                    callback(amplifyObj);
                 } else if (retries > 0) {
                     setTimeout(() => waitForAmplify(callback, retries - 1, delay), delay);
                 } else {
@@ -956,10 +959,11 @@
             function initAmplify() {
                 setConnectionStatus('connecting');
 
-                waitForAmplify(() => {
+                waitForAmplify((AmplifyInstance) => {
                     try {
-                        window.aws_amplify.Amplify.configure(AWS_CONFIG);
-                        API = window.aws_amplify.API;
+                        AmplifyInstance.configure(AWS_CONFIG);
+                        // v4.x: API is on window.aws_amplify.API or AmplifyInstance.API
+                        API = (window.aws_amplify && window.aws_amplify.API) || AmplifyInstance.API;
                         state.amplifyReady = true;
                         setConnectionStatus('online');
                         console.log('✅ AWS Amplify initialized successfully');
