@@ -4,14 +4,17 @@
     "apiName": "jcechat",
     "serviceName": "AppSync",
     "defaultAuthType": {
-      "mode": "API_KEY",
-      "expirationTime": 7
+      "mode": "AMAZON_COGNITO_USER_POOLS",
+      "cognitoUserPoolId": "authjcechatada26784"
     },
     "additionalAuthTypes": [
       {
-        "mode": "AMAZON_COGNITO_USER_POOLS",
-        "cognitoUserPoolId": "authjcechatada26784"
+        "mode": "API_KEY",
+        "expirationTime": 7,
+        "apiKeyExpirationDate": "2026-02-12T16:30:31.469Z",
+        "keyDescription": ""
       }
-    ]
+    ],
+    "conflictResolution": {}
   }
 }

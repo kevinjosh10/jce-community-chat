@@ -245,7 +245,7 @@
         }
         
         .form-input:invalid {
-            border-color: var(--success); /* Green only as requested */
+            border-color: #e5e7eb;
         }
 
         .shake {
@@ -497,14 +497,18 @@
         .message {
             max-width: 70%;
             animation: slideIn 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
         }
 
         .message.own {
             align-self: flex-end;
+            align-items: flex-end;
         }
 
         .message.other {
             align-self: flex-start;
+            align-items: flex-start;
         }
 
         @keyframes slideIn {
@@ -554,6 +558,17 @@
 
         .message.other .message-meta {
             color: var(--text-light);
+        }
+        
+        .sender-name {
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-bottom: 2px;
+            color: var(--text-light);
+        }
+        
+        .message.own .sender-name {
+            display: none;
         }
 
         .input-area {
@@ -719,11 +734,11 @@
 
     <!-- Login View -->
     <div class="login-container" id="login-view">
-        <form id="login-form" onsubmit="handleLogin(event)">
+        <form id="login-form">
             <div class="login-card">
                 <div class="form-group">
                     <input type="text" class="form-input" id="fullName" placeholder=" " autocomplete="name">
-                    <label class="form-label">Full Name</label>
+                    <label class="form-label">Full Name (Optional)</label>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -752,8 +767,8 @@
                 </div>
 
                 <div class="form-group">
-                    <input type="email" class="form-input" id="email" placeholder=" " autocomplete="email">
-                    <label class="form-label">JCE Email</label>
+                    <input type="email" class="form-input" id="email" placeholder=" " autocomplete="email" required>
+                    <label class="form-label">JCE Email (@jerusalemengg.ac.in)</label>
                 </div>
 
                 <button type="submit" class="btn-primary" id="join-btn">
@@ -810,22 +825,24 @@
         </main>
     </div>
 
-    <!-- Step A: UMD Script (Global Bundle) -->
-    <script src="https://unpkg.com/aws-amplify@6/dist/aws-amplify.min.js"></script>
+    <!-- AWS Amplify (UMD v5 for stability with global access) -->
+    <script src="https://unpkg.com/aws-amplify@5.3.11/dist/aws-amplify.min.js"></script>
 
-    <!-- Step C: Config & Logic -->
     <script>
         // --- Configuration ---
-        if (typeof Amplify !== 'undefined') {
-            Amplify.configure({
-                API: {
-                    graphql_endpoint: 'https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql',
-                    graphql_region: 'ap-south-1',
-                    graphql_apiKey: 'da2-5r3f3gtz5rfjvc6tsi6a4e6gwu'
-                }
-            });
+        const awsConfig = {
+            aws_appsync_graphqlEndpoint: 'https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql',
+            aws_appsync_region: 'ap-south-1',
+            aws_appsync_authenticationType: 'API_KEY',
+            aws_appsync_apiKey: 'da2-5r3f3gtz5rfjvc6tsi6a4e6gwu'
+        };
+
+        // Initialize Amplify
+        if (window.aws_amplify) {
+            window.aws_amplify.Amplify.configure(awsConfig);
         } else {
-            console.error('Amplify global object not found. Please check the script URL.');
+            console.error("AWS Amplify not loaded");
+            alert("Error loading chat system. Please refresh.");
         }
 
         // --- State ---
@@ -840,7 +857,7 @@
                 { id: 'Startups', icon: '🚀', name: 'Startups' },
                 { id: 'Academics', icon: '🎓', name: 'Academics' }
             ],
-            messages: {},
+            messages: {}, // Cache: { channelId: [msgs] }
             subscription: null
         };
 
@@ -860,6 +877,48 @@
             typingIndicator: document.getElementById('typing-indicator')
         };
 
+        // --- GraphQL Operations ---
+        const listMessagesQuery = `
+            query ListMessages($filter: ModelMessageFilterInput, $limit: Int) {
+                listMessages(filter: $filter, limit: $limit) {
+                    items {
+                        id
+                        channelId
+                        content
+                        userId
+                        userName
+                        createdAt
+                    }
+                }
+            }
+        `;
+
+        const createMessageMutation = `
+            mutation CreateMessage($input: CreateMessageInput!) {
+                createMessage(input: $input) {
+                    id
+                    channelId
+                    content
+                    userId
+                    userName
+                    createdAt
+                }
+            }
+        `;
+
+        const onCreateMessageSubscription = `
+            subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) {
+                onCreateMessage(filter: $filter) {
+                    id
+                    channelId
+                    content
+                    userId
+                    userName
+                    createdAt
+                }
+            }
+        `;
+
         // --- Initialization ---
         function init() {
             generateStars();
@@ -872,7 +931,7 @@
 
         // --- Visuals ---
         function generateStars() {
-            const count = 80; // Increased count
+            const count = 80;
             for (let i = 0; i < count; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
@@ -906,12 +965,6 @@
                 const base = 15;
                 const variance = Math.floor(Math.random() * 35);
                 els.onlineCount.textContent = base + variance;
-                
-                // Random typing simulation
-                if (Math.random() > 0.8) {
-                    els.typingIndicator.style.display = 'flex';
-                    setTimeout(() => els.typingIndicator.style.display = 'none', 3000);
-                }
             }, 5000);
         }
 
@@ -919,45 +972,45 @@
         function checkSession() {
             const saved = localStorage.getItem('jce_chat_user');
             if (saved) {
-                state.user = JSON.parse(saved);
-                // Pre-fill form for visual continuity
-                document.getElementById('fullName').value = state.user.name;
-                document.getElementById('email').value = state.user.email;
-                document.getElementById('dept').value = state.user.dept;
-                document.getElementById('year').value = state.user.year;
-                showChat();
+                try {
+                    state.user = JSON.parse(saved);
+                    showChat();
+                } catch (e) {
+                    localStorage.removeItem('jce_chat_user');
+                }
             }
         }
 
-        // Global handleLogin
-        window.handleLogin = function(event) {
-            event.preventDefault();
-            const email = document.getElementById('email').value.trim();
-            const name = document.getElementById('fullName').value.trim();
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            let name = document.getElementById('fullName').value.trim();
+            const dept = document.getElementById('dept').value || 'Student';
+            const year = document.getElementById('year').value || '';
             
+            // Validation
             if (!email.endsWith('@jerusalemengg.ac.in')) {
-                // Shake animation
                 const card = document.querySelector('.login-card');
                 card.classList.add('shake');
                 setTimeout(() => card.classList.remove('shake'), 500);
-                
-                alert('Please use your valid JCE email (@jerusalemengg.ac.in)');
+                alert('Access Restricted: Please use your official JCE email (@jerusalemengg.ac.in)');
                 return;
             }
-            
+
+            // Auto-generate name if empty
             if (!name) {
-                const card = document.querySelector('.login-card');
-                card.classList.add('shake');
-                setTimeout(() => card.classList.remove('shake'), 500);
-                return;
+                const namePart = email.split('@')[0];
+                name = namePart.split('.').map(part => 
+                    part.charAt(0).toUpperCase() + part.slice(1)
+                ).join(' ');
             }
 
             const user = {
                 name: name,
-                dept: document.getElementById('dept').value || 'CSE',
-                year: document.getElementById('year').value || 'I',
+                dept: dept,
+                year: year,
                 email: email,
-                id: Date.now().toString()
+                id: email // Use email as unique ID
             };
 
             localStorage.setItem('jce_chat_user', JSON.stringify(user));
@@ -965,22 +1018,12 @@
             showChat();
         }
 
-        els.emailInput.addEventListener('input', (e) => {
-            if (e.target.value.includes('@jerusalemengg.ac.in')) {
-                e.target.classList.add('valid');
-                e.target.style.borderColor = 'var(--success)';
-            } else {
-                e.target.classList.remove('valid');
-                e.target.style.borderColor = '#e5e7eb';
-            }
-        });
-
         function showChat() {
-            // Update User Profile
+            // Update User Profile UI
             const initials = state.user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
             document.getElementById('user-avatar').textContent = initials;
             document.getElementById('user-name-display').textContent = state.user.name;
-            document.getElementById('user-dept-display').textContent = `${state.user.dept} - ${state.user.year} Year`;
+            document.getElementById('user-dept-display').textContent = `${state.user.dept} ${state.user.year ? '- ' + state.user.year + ' Year' : ''}`;
 
             // Transition
             els.loginView.style.opacity = '0';
@@ -988,7 +1031,7 @@
             setTimeout(() => {
                 els.loginView.style.display = 'none';
                 els.chatView.classList.add('active');
-                subscribeToChannel(state.currentChannel);
+                loadChannel(state.currentChannel);
             }, 500);
         }
 
@@ -996,7 +1039,7 @@
         function renderChannels() {
             els.channelsList.innerHTML = state.channels.map(ch => `
                 <button class="channel-btn ${ch.id === state.currentChannel ? 'active' : ''}" 
-                        onclick="window.switchChannel('${ch.id}')">
+                        onclick="switchChannel('${ch.id}')">
                     <span>${ch.icon}</span> ${ch.name}
                 </button>
             `).join('');
@@ -1011,23 +1054,91 @@
             els.currentChannelName.textContent = `${ch.icon} ${ch.name}`;
             renderChannels();
             
-            // Re-subscribe
-            subscribeToChannel(channelId);
-            renderMessages();
+            loadChannel(channelId);
         };
+
+        async function loadChannel(channelId) {
+            // Clear current messages view
+            els.messagesContainer.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af;">Loading messages...</div>';
+            
+            // Unsubscribe previous
+            if (state.subscription) {
+                state.subscription.unsubscribe();
+                state.subscription = null;
+            }
+
+            // Fetch Messages
+            try {
+                const result = await window.aws_amplify.Amplify.API.graphql({
+                    query: listMessagesQuery,
+                    variables: { 
+                        filter: { channelId: { eq: channelId } },
+                        limit: 100
+                    }
+                });
+                
+                const items = result.data.listMessages.items;
+                // Sort by createdAt
+                items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                
+                state.messages[channelId] = items;
+                renderMessages();
+                
+            } catch (err) {
+                console.error('Error fetching messages:', err);
+                els.messagesContainer.innerHTML = '<div style="text-align:center; padding:2rem; color:#ef4444;">Failed to load messages.</div>';
+            }
+
+            // Subscribe to new messages
+            subscribeToChannel(channelId);
+        }
+
+        function subscribeToChannel(channelId) {
+            try {
+                state.subscription = window.aws_amplify.Amplify.API.graphql({
+                    query: onCreateMessageSubscription,
+                    variables: { filter: { channelId: { eq: channelId } } }
+                }).subscribe({
+                    next: ({ value }) => {
+                        const msg = value.data.onCreateMessage;
+                        if (msg.channelId === state.currentChannel) {
+                            // Deduplicate
+                            const exists = state.messages[state.currentChannel].some(m => m.id === msg.id);
+                            if (!exists) {
+                                state.messages[state.currentChannel].push(msg);
+                                renderMessages();
+                                // Sound effect for others' messages
+                                if (msg.userId !== state.user.email) {
+                                    // Optional sound
+                                }
+                            }
+                        }
+                    },
+                    error: (err) => console.error('Subscription error:', err)
+                });
+            } catch (err) {
+                console.error('Subscription setup failed:', err);
+            }
+        }
 
         function renderMessages() {
             const msgs = state.messages[state.currentChannel] || [];
+            
+            if (msgs.length === 0) {
+                els.messagesContainer.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af;">No messages yet. Start the conversation!</div>';
+                return;
+            }
+
             els.messagesContainer.innerHTML = msgs.map(msg => {
                 const isOwn = msg.userId === state.user.email; 
                 return `
                     <div class="message ${isOwn ? 'own' : 'other'}">
-                        <div class="message-meta">
-                            ${isOwn ? '' : `<span>${msg.userName}</span>`}
-                            <span>${new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                        </div>
+                        ${!isOwn ? `<div class="sender-name">${msg.userName}</div>` : ''}
                         <div class="message-bubble">
                             ${formatMessage(msg.content)}
+                        </div>
+                        <div class="message-meta">
+                            <span>${new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                     </div>
                 `;
@@ -1036,8 +1147,11 @@
         }
 
         function formatMessage(text) {
-            // Enhanced Markdown
-            return text
+            if (!text) return '';
+            // Basic sanitization
+            const safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            // Markdown-like formatting
+            return safeText
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
                 .replace(/`(.*?)`/g, '<code>$1</code>')
@@ -1047,34 +1161,6 @@
         function scrollToBottom() {
             els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
         }
-
-        // --- AWS AppSync Integration (UMD Style) ---
-        
-        const createMessageMutation = `
-            mutation CreateMessage($input: CreateMessageInput!) {
-                createMessage(input: $input) {
-                    id
-                    channelId
-                    content
-                    userId
-                    userName
-                    createdAt
-                }
-            }
-        `;
-
-        const onCreateMessageSubscription = `
-            subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) {
-                onCreateMessage(filter: $filter) {
-                    id
-                    channelId
-                    content
-                    userId
-                    userName
-                    createdAt
-                }
-            }
-        `;
 
         async function sendMessage() {
             const content = els.messageInput.value.trim();
@@ -1086,93 +1172,33 @@
                 userId: state.user.email,
                 userName: state.user.name,
                 createdAt: new Date().toISOString(),
-                id: Date.now().toString()
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
             };
 
             // Optimistic Update
             if (!state.messages[state.currentChannel]) state.messages[state.currentChannel] = [];
             state.messages[state.currentChannel].push(message);
             renderMessages();
+            
+            // Clear Input
             els.messageInput.value = '';
             els.messageInput.style.height = 'auto';
 
             try {
-                if (typeof Amplify !== 'undefined' && Amplify.API) {
-                    await Amplify.API.graphql({
-                        query: createMessageMutation,
-                        variables: { input: message }
-                    });
-                }
+                await window.aws_amplify.Amplify.API.graphql({
+                    query: createMessageMutation,
+                    variables: { input: message }
+                });
             } catch (err) {
                 console.error('Error sending message:', err);
-                saveToLocalFallback(state.currentChannel, message);
-            }
-        }
-
-        function saveToLocalFallback(channelId, message) {
-            const key = `jce_chat_msgs_${channelId}`;
-            const saved = JSON.parse(localStorage.getItem(key) || '[]');
-            saved.push(message);
-            localStorage.setItem(key, JSON.stringify(saved));
-        }
-
-        function loadFromLocalFallback(channelId) {
-            const key = `jce_chat_msgs_${channelId}`;
-            return JSON.parse(localStorage.getItem(key) || '[]');
-        }
-
-        function subscribeToChannel(channelId) {
-            if (state.subscription) {
-                state.subscription.unsubscribe();
-            }
-
-            // Load local history if empty
-            if (!state.messages[channelId]) {
-                const localMsgs = loadFromLocalFallback(channelId);
-                if (localMsgs.length > 0) {
-                    state.messages[channelId] = localMsgs;
-                } else {
-                    // Mock initial data
-                    state.messages[channelId] = [
-                        {
-                            id: '1',
-                            userId: 'system',
-                            userName: 'System',
-                            content: `Welcome to the **${channelId}** channel!`,
-                            createdAt: new Date(Date.now() - 100000).toISOString()
-                        }
-                    ];
-                }
-            }
-            renderMessages();
-
-            // Subscribe
-            try {
-                if (typeof Amplify !== 'undefined' && Amplify.API) {
-                    state.subscription = Amplify.API.graphql({
-                        query: onCreateMessageSubscription,
-                        variables: { filter: { channelId: { eq: channelId } } }
-                    }).subscribe({
-                        next: ({ value }) => { 
-                            const data = value.data || value; 
-                            const msg = data.onCreateMessage;
-                            if (msg.userId !== state.user.email) { 
-                                if (!state.messages[channelId]) state.messages[channelId] = [];
-                                state.messages[channelId].push(msg);
-                                renderMessages();
-                                new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3').play().catch(()=>{});
-                            }
-                        },
-                        error: (err) => console.error('Sub error:', err)
-                    });
-                }
-            } catch (err) {
-                console.log('Subscription setup failed', err);
+                // Optionally show error state on the message
             }
         }
 
         // --- Event Listeners ---
         function setupEventListeners() {
+            els.loginForm.addEventListener('submit', handleLogin);
+
             els.sendBtn.addEventListener('click', sendMessage);
             
             els.messageInput.addEventListener('keypress', (e) => {
@@ -1185,6 +1211,16 @@
             els.messageInput.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            els.emailInput.addEventListener('input', (e) => {
+                if (e.target.value.includes('@jerusalemengg.ac.in')) {
+                    e.target.classList.add('valid');
+                    e.target.style.borderColor = 'var(--success)';
+                } else {
+                    e.target.classList.remove('valid');
+                    e.target.style.borderColor = '#e5e7eb';
+                }
             });
         }
 
