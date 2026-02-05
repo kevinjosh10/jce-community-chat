@@ -893,10 +893,14 @@
             'use strict';
 
             const AWS_CONFIG = {
+                Auth: {
+                    region: 'ap-south-1',
+                    userPoolId: 'ap-south-1_ZqT8AaT5Y',
+                    userPoolWebClientId: '4k2pg0p5cl5kciuqahlq4kqfob',
+                },
                 aws_appsync_graphqlEndpoint: 'https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql',
                 aws_appsync_region: 'ap-south-1',
-                aws_appsync_authenticationType: 'API_KEY',
-                aws_appsync_apiKey: 'da2-5r3f3gtz5rfjvc6tsi6a4e6gwu'
+                aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS'
             };
 
             const CHANNELS = [
@@ -914,8 +918,17 @@
                 subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channelId content userId userName createdAt } }`
             };
 
-            const state = { user: null, currentChannel: 'General', messages: {}, subscription: null, amplifyReady: false };
+            const state = {
+                user: null,
+                currentChannel: 'General',
+                messages: {},
+                subscription: null,
+                amplifyReady: false,
+                authState: 'signIn', // signIn, signUp, confirmSignUp
+                pendingUser: null // for confirmation flow
+            };
             let API = null;
+            let Auth = null;
 
             const $ = id => document.getElementById(id);
             const els = {};
@@ -962,20 +975,180 @@
                 waitForAmplify((AmplifyInstance) => {
                     try {
                         AmplifyInstance.configure(AWS_CONFIG);
-                        // v4.x: API is on window.aws_amplify.API or AmplifyInstance.API
+                        // v4.x: API and Auth are on window.aws_amplify
                         API = (window.aws_amplify && window.aws_amplify.API) || AmplifyInstance.API;
+                        Auth = (window.aws_amplify && window.aws_amplify.Auth) || AmplifyInstance.Auth;
                         state.amplifyReady = true;
-                        setConnectionStatus('online');
                         console.log('✅ AWS Amplify initialized successfully');
 
-                        if (state.user) {
-                            loadChannel(state.currentChannel);
-                        }
+                        // Check if user is already signed in
+                        checkAuthSession();
                     } catch (e) {
                         console.error('Amplify configuration error:', e);
                         setConnectionStatus('offline');
                     }
                 });
+            }
+
+            async function checkAuthSession() {
+                try {
+                    const cognitoUser = await Auth.currentAuthenticatedUser();
+                    const attributes = cognitoUser.attributes || {};
+                    state.user = {
+                        id: cognitoUser.username,
+                        email: attributes.email || cognitoUser.username,
+                        name: attributes.name || attributes.email?.split('@')[0] || 'User'
+                    };
+                    setConnectionStatus('online');
+                    showChat();
+                } catch (e) {
+                    // Not signed in - show login form
+                    console.log('No active session, showing login');
+                    setConnectionStatus('online');
+                    renderAuthForm();
+                }
+            }
+
+            async function handleSignUp(email, password, name) {
+                try {
+                    $('auth-error').textContent = '';
+                    $('auth-btn').disabled = true;
+                    $('auth-btn').textContent = 'Creating account...';
+
+                    await Auth.signUp({
+                        username: email,
+                        password: password,
+                        attributes: { email, name }
+                    });
+
+                    state.pendingUser = { email, password, name };
+                    state.authState = 'confirmSignUp';
+                    renderAuthForm();
+                } catch (e) {
+                    console.error('Sign up error:', e);
+                    $('auth-error').textContent = e.message || 'Sign up failed';
+                    $('auth-btn').disabled = false;
+                    $('auth-btn').textContent = 'Sign Up';
+                }
+            }
+
+            async function handleConfirmSignUp(code) {
+                try {
+                    $('auth-error').textContent = '';
+                    $('auth-btn').disabled = true;
+                    $('auth-btn').textContent = 'Verifying...';
+
+                    await Auth.confirmSignUp(state.pendingUser.email, code);
+                    // Auto sign in after confirmation
+                    await Auth.signIn(state.pendingUser.email, state.pendingUser.password);
+                    await checkAuthSession();
+                } catch (e) {
+                    console.error('Confirm error:', e);
+                    $('auth-error').textContent = e.message || 'Verification failed';
+                    $('auth-btn').disabled = false;
+                    $('auth-btn').textContent = 'Verify';
+                }
+            }
+
+            async function handleSignIn(email, password) {
+                try {
+                    $('auth-error').textContent = '';
+                    $('auth-btn').disabled = true;
+                    $('auth-btn').textContent = 'Signing in...';
+
+                    await Auth.signIn(email, password);
+                    await checkAuthSession();
+                } catch (e) {
+                    console.error('Sign in error:', e);
+                    if (e.code === 'UserNotConfirmedException') {
+                        state.pendingUser = { email, password };
+                        state.authState = 'confirmSignUp';
+                        renderAuthForm();
+                    } else {
+                        $('auth-error').textContent = e.message || 'Sign in failed';
+                        $('auth-btn').disabled = false;
+                        $('auth-btn').textContent = 'Sign In';
+                    }
+                }
+            }
+
+            function renderAuthForm() {
+                const isSignUp = state.authState === 'signUp';
+                const isConfirm = state.authState === 'confirmSignUp';
+
+                let formHTML = '';
+
+                if (isConfirm) {
+                    formHTML = `
+                        <div class="form-group">
+                            <input type="text" class="form-input" id="auth-code" placeholder=" " required autocomplete="one-time-code">
+                            <label class="form-label">Verification Code (check email)</label>
+                        </div>
+                        <div id="auth-error" style="color: var(--error); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+                        <button type="submit" class="btn-primary" id="auth-btn">Verify 🔐</button>
+                        <p style="text-align: center; margin-top: 1rem; color: var(--text-light); font-size: 0.875rem;">
+                            Check your email for the verification code
+                        </p>
+                    `;
+                } else {
+                    formHTML = `
+                        ${isSignUp ? `
+                        <div class="form-group">
+                            <input type="text" class="form-input" id="auth-name" placeholder=" " required autocomplete="name">
+                            <label class="form-label">Full Name</label>
+                        </div>
+                        ` : ''}
+                        <div class="form-group">
+                            <input type="email" class="form-input" id="auth-email" placeholder=" " required autocomplete="email">
+                            <label class="form-label">Email</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" class="form-input" id="auth-password" placeholder=" " required autocomplete="${isSignUp ? 'new-password' : 'current-password'}" minlength="8">
+                            <label class="form-label">Password</label>
+                        </div>
+                        <div id="auth-error" style="color: var(--error); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+                        <button type="submit" class="btn-primary" id="auth-btn">${isSignUp ? 'Sign Up' : 'Sign In'} 🚀</button>
+                        <p style="text-align: center; margin-top: 1rem; color: var(--text-light); font-size: 0.875rem;">
+                            ${isSignUp ? 'Already have an account?' : "Don't have an account?"}
+                            <a href="#" id="auth-toggle" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                                ${isSignUp ? 'Sign In' : 'Sign Up'}
+                            </a>
+                        </p>
+                    `;
+                }
+
+                document.querySelector('.login-card').innerHTML = formHTML;
+
+                // Attach event listeners
+                const form = document.querySelector('.login-card');
+                form.addEventListener('submit', handleAuthSubmit);
+
+                const toggle = $('auth-toggle');
+                if (toggle) {
+                    toggle.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        state.authState = isSignUp ? 'signIn' : 'signUp';
+                        renderAuthForm();
+                    });
+                }
+            }
+
+            function handleAuthSubmit(e) {
+                e.preventDefault();
+
+                if (state.authState === 'confirmSignUp') {
+                    const code = $('auth-code').value.trim();
+                    if (code) handleConfirmSignUp(code);
+                } else if (state.authState === 'signUp') {
+                    const name = $('auth-name').value.trim();
+                    const email = $('auth-email').value.trim();
+                    const password = $('auth-password').value;
+                    if (name && email && password) handleSignUp(email, password, name);
+                } else {
+                    const email = $('auth-email').value.trim();
+                    const password = $('auth-password').value;
+                    if (email && password) handleSignIn(email, password);
+                }
             }
 
             async function fetchMessages(channelId) {
@@ -1134,19 +1307,14 @@
                 }
             }
 
-            function checkSession() {
-                const saved = getCache('jce_chat_user');
-                if (saved) {
-                    state.user = saved;
-                    showChat();
-                }
-            }
+            // checkSession removed - using Cognito session instead
 
             function showChat() {
-                const initials = state.user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const name = state.user.name || 'User';
+                const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
                 $('user-avatar').textContent = initials;
-                $('user-name-display').textContent = state.user.name;
-                $('user-dept-display').textContent = `${state.user.dept}${state.user.year ? ' - ' + state.user.year + ' Year' : ''}`;
+                $('user-name-display').textContent = name;
+                $('user-dept-display').textContent = state.user.email || '';
 
                 els.loginView.style.opacity = '0';
                 els.loginView.style.transform = 'translateY(20px)';
@@ -1184,14 +1352,18 @@
                 showChat();
             }
 
-            function logout() {
-                localStorage.removeItem('jce_chat_user');
+            async function logout() {
+                try {
+                    if (Auth) await Auth.signOut();
+                } catch (e) {
+                    console.error('Logout error:', e);
+                }
                 if (state.subscription) state.subscription.unsubscribe();
                 location.reload();
             }
 
             function setupEvents() {
-                els.loginForm.addEventListener('submit', handleLogin);
+                // Auth form events are handled by renderAuthForm()
                 els.sendBtn.addEventListener('click', sendMessage);
 
                 els.messageInput.addEventListener('keypress', e => {
