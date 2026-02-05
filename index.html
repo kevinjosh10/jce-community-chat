@@ -446,6 +446,8 @@
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             z-index: 10;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .channel-info h2 {
@@ -459,7 +461,8 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
         .connection-status {
@@ -661,6 +664,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
 
         .send-btn:hover {
@@ -842,7 +846,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="user-profile">
-                    <div class="avatar" id="user-avatar">RK</div>
+                    <div class="avatar" id="user-avatar">JC</div>
                     <div class="user-info">
                         <h3 id="user-name-display">User</h3>
                         <p id="user-dept-display">Student</p>
@@ -881,12 +885,13 @@
         </main>
     </div>
 
-    <script src="https://unpkg.com/aws-amplify@5.3.11/dist/aws-amplify.min.js"></script>
+    <!-- AWS Amplify - using jsdelivr for better reliability -->
+    <script src="https://cdn.jsdelivr.net/npm/aws-amplify@5.3.11/dist/aws-amplify.min.js"></script>
+
     <script>
         (function () {
             'use strict';
 
-            // --- Configuration ---
             const AWS_CONFIG = {
                 aws_appsync_graphqlEndpoint: 'https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql',
                 aws_appsync_region: 'ap-south-1',
@@ -909,31 +914,22 @@
                 subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channelId content userId userName createdAt } }`
             };
 
-            // --- State ---
-            const state = { user: null, currentChannel: 'General', messages: {}, subscription: null, isOnline: false, amplifyReady: false };
+            const state = { user: null, currentChannel: 'General', messages: {}, subscription: null, amplifyReady: false };
             let API = null;
 
-            // --- DOM ---
             const $ = id => document.getElementById(id);
-            const els = {
-                loginView: $('login-view'), chatView: $('chat-view'), loginForm: $('login-form'),
-                emailInput: $('email'), channelsList: $('channels-list'), messagesContainer: $('messages-container'),
-                messageInput: $('message-input'), sendBtn: $('send-btn'), currentChannelName: $('current-channel-name'),
-                onlineCount: $('online-count'), starsContainer: $('stars-container'), connectionStatus: $('connection-status'),
-                logoutBtn: $('logout-btn')
-            };
+            const els = {};
 
-            // --- Helpers ---
             function getCache(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
             function setCache(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch { } }
             function uuid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
 
             function setConnectionStatus(status) {
                 const el = els.connectionStatus;
+                if (!el) return;
                 el.className = 'connection-status ' + status;
                 const labels = { online: '● Connected', offline: '○ Offline', connecting: '◐ Connecting...' };
                 el.innerHTML = `<div class="dot"></div><span>${labels[status]}</span>`;
-                state.isOnline = status === 'online';
             }
 
             function formatMessage(text) {
@@ -945,43 +941,45 @@
                     .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
             }
 
-            // --- Init Amplify with retry ---
-            async function initAmplify() {
-                setConnectionStatus('connecting');
-                let attempts = 0;
-                const maxAttempts = 15;
+            function waitForAmplify(callback, retries = 20, delay = 250) {
+                if (window.aws_amplify && window.aws_amplify.Amplify) {
+                    callback();
+                } else if (retries > 0) {
+                    setTimeout(() => waitForAmplify(callback, retries - 1, delay), delay);
+                } else {
+                    console.error("Amplify failed to load after multiple attempts.");
+                    setConnectionStatus('offline');
+                    alert("Error loading chat system. Please refresh the page.");
+                }
+            }
 
-                return new Promise((resolve, reject) => {
-                    const check = () => {
-                        attempts++;
-                        if (window.aws_amplify?.Amplify) {
-                            try {
-                                window.aws_amplify.Amplify.configure(AWS_CONFIG);
-                                API = window.aws_amplify.API;
-                                state.amplifyReady = true;
-                                setConnectionStatus('online');
-                                console.log('✅ Amplify initialized');
-                                resolve();
-                            } catch (e) {
-                                console.error('Amplify config error:', e);
-                                setConnectionStatus('offline');
-                                reject(e);
-                            }
-                        } else if (attempts < maxAttempts) {
-                            setTimeout(check, 300);
-                        } else {
-                            setConnectionStatus('offline');
-                            reject(new Error('Amplify load timeout'));
+            function initAmplify() {
+                setConnectionStatus('connecting');
+
+                waitForAmplify(() => {
+                    try {
+                        window.aws_amplify.Amplify.configure(AWS_CONFIG);
+                        API = window.aws_amplify.API;
+                        state.amplifyReady = true;
+                        setConnectionStatus('online');
+                        console.log('✅ AWS Amplify initialized successfully');
+
+                        if (state.user) {
+                            loadChannel(state.currentChannel);
                         }
-                    };
-                    check();
+                    } catch (e) {
+                        console.error('Amplify configuration error:', e);
+                        setConnectionStatus('offline');
+                    }
                 });
             }
 
-            // --- GraphQL Operations ---
             async function fetchMessages(channelId) {
                 if (!API) throw new Error('API not ready');
-                const result = await API.graphql({ query: QUERIES.list, variables: { filter: { channelId: { eq: channelId } }, limit: 100 } });
+                const result = await API.graphql({
+                    query: QUERIES.list,
+                    variables: { filter: { channelId: { eq: channelId } }, limit: 100 }
+                });
                 return result.data.listMessages.items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             }
 
@@ -991,29 +989,40 @@
             }
 
             function subscribeToChannel(channelId) {
-                if (state.subscription) { state.subscription.unsubscribe(); state.subscription = null; }
+                if (state.subscription) {
+                    state.subscription.unsubscribe();
+                    state.subscription = null;
+                }
                 if (!API) return;
+
                 try {
-                    state.subscription = API.graphql({ query: QUERIES.subscribe, variables: { filter: { channelId: { eq: channelId } } } })
-                        .subscribe({
-                            next: ({ value }) => {
-                                const msg = value.data.onCreateMessage;
-                                if (msg.channelId === state.currentChannel) {
-                                    const msgs = state.messages[state.currentChannel] || [];
-                                    if (!msgs.some(m => m.id === msg.id)) {
-                                        msgs.push(msg);
-                                        state.messages[state.currentChannel] = msgs;
-                                        setCache('jce_messages_' + state.currentChannel, msgs.slice(-50));
-                                        renderMessages();
-                                    }
+                    state.subscription = API.graphql({
+                        query: QUERIES.subscribe,
+                        variables: { filter: { channelId: { eq: channelId } } }
+                    }).subscribe({
+                        next: ({ value }) => {
+                            const msg = value.data.onCreateMessage;
+                            if (msg.channelId === state.currentChannel) {
+                                const msgs = state.messages[state.currentChannel] || [];
+                                if (!msgs.some(m => m.id === msg.id)) {
+                                    msgs.push(msg);
+                                    state.messages[state.currentChannel] = msgs;
+                                    setCache('jce_messages_' + state.currentChannel, msgs.slice(-50));
+                                    renderMessages();
                                 }
-                            },
-                            error: (e) => { console.error('Subscription error:', e); setConnectionStatus('offline'); }
-                        });
-                } catch (e) { console.error('Subscribe failed:', e); }
+                            }
+                        },
+                        error: (e) => {
+                            console.error('Subscription error:', e);
+                            setConnectionStatus('offline');
+                        }
+                    });
+                    console.log('✅ Subscribed to channel:', channelId);
+                } catch (e) {
+                    console.error('Subscribe failed:', e);
+                }
             }
 
-            // --- UI Rendering ---
             function generateStars() {
                 const count = window.innerWidth < 768 ? 40 : 80;
                 for (let i = 0; i < count; i++) {
@@ -1048,17 +1057,19 @@
                 els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
             }
 
-            // --- Channel & Messages ---
             async function loadChannel(channelId) {
                 state.currentChannel = channelId;
                 const ch = CHANNELS.find(c => c.id === channelId);
                 els.currentChannelName.textContent = `${ch.icon} ${ch.name}`;
                 renderChannels();
 
-                // Show cached first
                 const cached = getCache('jce_messages_' + channelId);
-                if (cached) { state.messages[channelId] = cached; renderMessages(); }
-                else { els.messagesContainer.innerHTML = '<div class="status-message">Loading messages...</div>'; }
+                if (cached) {
+                    state.messages[channelId] = cached;
+                    renderMessages();
+                } else {
+                    els.messagesContainer.innerHTML = '<div class="status-message">Loading messages...</div>';
+                }
 
                 if (state.amplifyReady) {
                     try {
@@ -1070,7 +1081,9 @@
                     } catch (e) {
                         console.error('Fetch error:', e);
                         setConnectionStatus('offline');
-                        if (!cached) els.messagesContainer.innerHTML = '<div class="status-message error">Failed to load messages. Using offline mode.</div>';
+                        if (!cached) {
+                            els.messagesContainer.innerHTML = '<div class="status-message error">Failed to load messages. Working in offline mode.</div>';
+                        }
                     }
                     subscribeToChannel(channelId);
                 }
@@ -1080,7 +1093,15 @@
                 const content = els.messageInput.value.trim();
                 if (!content || !state.user) return;
 
-                const msg = { id: uuid(), channelId: state.currentChannel, content, userId: state.user.email, userName: state.user.name, createdAt: new Date().toISOString(), pending: true };
+                const msg = {
+                    id: uuid(),
+                    channelId: state.currentChannel,
+                    content,
+                    userId: state.user.email,
+                    userName: state.user.name,
+                    createdAt: new Date().toISOString(),
+                    pending: true
+                };
 
                 if (!state.messages[state.currentChannel]) state.messages[state.currentChannel] = [];
                 state.messages[state.currentChannel].push(msg);
@@ -1097,20 +1118,24 @@
                         renderMessages();
                     } catch (e) {
                         console.error('Send error:', e);
-                        msg.pending = false; msg.failed = true;
+                        msg.pending = false;
+                        msg.failed = true;
                         renderMessages();
                     }
                 } else {
-                    msg.pending = false; msg.failed = true;
+                    msg.pending = false;
+                    msg.failed = true;
                     setCache('jce_messages_' + state.currentChannel, state.messages[state.currentChannel].slice(-50));
                     renderMessages();
                 }
             }
 
-            // --- Auth ---
             function checkSession() {
                 const saved = getCache('jce_chat_user');
-                if (saved) { state.user = saved; showChat(); }
+                if (saved) {
+                    state.user = saved;
+                    showChat();
+                }
             }
 
             function showChat() {
@@ -1118,9 +1143,18 @@
                 $('user-avatar').textContent = initials;
                 $('user-name-display').textContent = state.user.name;
                 $('user-dept-display').textContent = `${state.user.dept}${state.user.year ? ' - ' + state.user.year + ' Year' : ''}`;
+
                 els.loginView.style.opacity = '0';
                 els.loginView.style.transform = 'translateY(20px)';
-                setTimeout(() => { els.loginView.style.display = 'none'; els.chatView.classList.add('active'); loadChannel(state.currentChannel); }, 500);
+
+                setTimeout(() => {
+                    els.loginView.style.display = 'none';
+                    els.chatView.classList.add('active');
+
+                    if (state.amplifyReady) {
+                        loadChannel(state.currentChannel);
+                    }
+                }, 500);
             }
 
             function handleLogin(e) {
@@ -1136,7 +1170,10 @@
                     alert('Please use your official JCE email (@jerusalemengg.ac.in)');
                     return;
                 }
-                if (!name) name = email.split('@')[0].split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+
+                if (!name) {
+                    name = email.split('@')[0].split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+                }
 
                 state.user = { name, dept, year, email, id: email };
                 setCache('jce_chat_user', state.user);
@@ -1149,29 +1186,65 @@
                 location.reload();
             }
 
-            // --- Event Listeners ---
             function setupEvents() {
                 els.loginForm.addEventListener('submit', handleLogin);
                 els.sendBtn.addEventListener('click', sendMessage);
-                els.messageInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-                els.messageInput.addEventListener('input', function () { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
-                els.emailInput.addEventListener('input', e => { e.target.classList.toggle('valid', e.target.value.includes('@jerusalemengg.ac.in')); });
-                els.channelsList.addEventListener('click', e => { const btn = e.target.closest('.channel-btn'); if (btn) loadChannel(btn.dataset.channel); });
+
+                els.messageInput.addEventListener('keypress', e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+
+                els.messageInput.addEventListener('input', function () {
+                    this.style.height = 'auto';
+                    this.style.height = this.scrollHeight + 'px';
+                });
+
+                els.emailInput.addEventListener('input', e => {
+                    e.target.classList.toggle('valid', e.target.value.includes('@jerusalemengg.ac.in'));
+                });
+
+                els.channelsList.addEventListener('click', e => {
+                    const btn = e.target.closest('.channel-btn');
+                    if (btn) loadChannel(btn.dataset.channel);
+                });
+
                 els.logoutBtn.addEventListener('click', logout);
-                setInterval(() => { els.onlineCount.textContent = Math.floor(15 + Math.random() * 35); }, 5000);
+
+                setInterval(() => {
+                    els.onlineCount.textContent = Math.floor(15 + Math.random() * 35);
+                }, 5000);
             }
 
-            // --- Init ---
-            async function init() {
+            function init() {
+                els.loginView = $('login-view');
+                els.chatView = $('chat-view');
+                els.loginForm = $('login-form');
+                els.emailInput = $('email');
+                els.channelsList = $('channels-list');
+                els.messagesContainer = $('messages-container');
+                els.messageInput = $('message-input');
+                els.sendBtn = $('send-btn');
+                els.currentChannelName = $('current-channel-name');
+                els.onlineCount = $('online-count');
+                els.starsContainer = $('stars-container');
+                els.connectionStatus = $('connection-status');
+                els.logoutBtn = $('logout-btn');
+
                 generateStars();
                 renderChannels();
                 setupEvents();
                 checkSession();
-                try { await initAmplify(); } catch (e) { console.error('Init failed:', e); }
+                initAmplify();
             }
 
-            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-            else init();
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
         })();
     </script>
 </body>
