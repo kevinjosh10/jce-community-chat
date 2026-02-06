@@ -771,6 +771,81 @@
             border-radius: 4px;
             font-family: monospace;
         }
+
+        .message-bubble code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-style: italic;
+            height: 24px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .typing-indicator.active {
+            opacity: 1;
+        }
+
+        /* Reactions */
+        .message-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message:hover .message-actions {
+            opacity: 1;
+        }
+
+        .reaction-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: transform 0.2s;
+            font-size: 1rem;
+            padding: 0;
+        }
+
+        .reaction-btn:hover {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+
+        .reactions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin-top: 0.25rem;
+        }
+
+        .reaction-chip {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .reaction-chip.active {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
     </style>
 </head>
 
@@ -822,6 +897,7 @@
                 </div>
             </header>
             <div class="messages-container" id="messages-container"></div>
+            <div class="typing-indicator" id="typing-indicator"></div>
             <div class="input-area">
                 <textarea class="chat-input" id="message-input" placeholder="Type a message..." rows="1"
                     maxlength="1000"></textarea>
@@ -870,6 +946,22 @@
                 subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channel content email name dept year timestamp createdAt } }`
             };
 
+            const CMD_PREFIX = "CMD::";
+            // Simple list of common bad words (English & Tamil phonetic/transliterated)
+            // Note: This is a basic filter.
+            const BAD_WORDS = [
+                // English
+                "fuck", "shit", "bitch", "asshole", "cunt", "dick", "pussy", "bastard", "idiot", "stupid",
+                // Tamil (Phonetic/Common)
+                "mayiru", "mair", "thevdia", "thevidiya", "punda", "pundai", "ommale", "ommala", "sunni", "poolu", "kuyyam",
+                "othu", "otha", "omma", "baadu", "item", "potte"
+            ];
+
+            function containsBadWords(text) {
+                const lower = text.toLowerCase();
+                return BAD_WORDS.some(word => lower.includes(word));
+            }
+
             const state = {
                 user: null, // { id, email, name, dept, year }
                 currentChannel: 'General',
@@ -877,7 +969,14 @@
                 subscription: null,
                 amplifyReady: false,
                 authState: 'signIn', // 'signIn', 'signUp', 'confirmSignUp'
-                pendingUser: null // Stores email/pass during verification step
+                currentChannel: 'General',
+                messages: {},
+                subscription: null,
+                amplifyReady: false,
+                authState: 'signIn', // 'signIn', 'signUp', 'confirmSignUp'
+                pendingUser: null, // Stores email/pass during verification step
+                typingUsers: {}, // { userId: { name, timer } }
+                reactions: {} // { msgId: { emoji: [userIds] } }
             };
             let API = null;
             let Auth = null;
@@ -888,6 +987,76 @@
             function getCache(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
             function setCache(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch { } }
             function uuid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
+
+            async function sendControlMessage(type, ...args) {
+                if (!state.user) return;
+                const content = CMD_PREFIX + type + "::" + args.join("::");
+                try {
+                    const msg = {
+                        id: uuid(),
+                        channel: state.currentChannel,
+                        content,
+                        email: state.user.email,
+                        name: state.user.name,
+                        dept: state.user.dept || 'Student',
+                        year: state.user.year || 'I',
+                        timestamp: Date.now(),
+                        createdAt: new Date().toISOString()
+                    };
+                    await createMessage(msg);
+                } catch (e) { console.error("CMD failed", e); }
+            }
+
+            function processMessages(messages, isHistory = false) {
+                const visible = [];
+                messages.forEach(msg => {
+                    if (msg.content.startsWith(CMD_PREFIX)) {
+                        const parts = msg.content.split('::');
+                        const cmd = parts[1];
+
+                        // Handle Reactions
+                        if (cmd === 'REACT' && parts.length >= 5) {
+                            const [_, __, msgId, emoji, userId] = parts;
+                            if (!state.reactions[msgId]) state.reactions[msgId] = {};
+                            if (!state.reactions[msgId][emoji]) state.reactions[msgId][emoji] = [];
+                            if (!state.reactions[msgId][emoji].includes(userId)) {
+                                state.reactions[msgId][emoji].push(userId);
+                            }
+                        }
+                        else if (cmd === 'UNREACT' && parts.length >= 5) {
+                            const [_, __, msgId, emoji, userId] = parts;
+                            if (state.reactions[msgId] && state.reactions[msgId][emoji]) {
+                                const idx = state.reactions[msgId][emoji].indexOf(userId);
+                                if (idx > -1) state.reactions[msgId][emoji].splice(idx, 1);
+                            }
+                        }
+                        // Handle Typing (only real-time)
+                        else if (cmd === 'TYPING' && parts.length >= 4 && !isHistory) {
+                            const [_, __, userId, name] = parts;
+                            handleTyping(userId, name);
+                        }
+                    } else {
+                        visible.push(msg);
+                    }
+                });
+                return visible;
+            }
+
+            function handleTyping(userId, name) {
+                if (!state.user || userId === state.user.email) return;
+                // Note: using email as ID based on schema usage in sendMessage
+
+                const now = Date.now();
+                state.typingUsers[userId] = { name, time: now };
+                renderTyping();
+
+                setTimeout(() => {
+                    if (state.typingUsers[userId] && state.typingUsers[userId].time === now) {
+                        delete state.typingUsers[userId];
+                        renderTyping();
+                    }
+                }, 3000);
+            }
 
             function setConnectionStatus(status) {
                 const el = els.connectionStatus;
@@ -1195,12 +1364,22 @@
                         next: ({ value }) => {
                             const msg = value.data.onCreateMessage;
                             if (msg.channel === state.currentChannel) {
-                                const msgs = state.messages[state.currentChannel] || [];
-                                if (!msgs.some(m => m.id === msg.id)) {
-                                    msgs.push(msg);
-                                    state.messages[state.currentChannel] = msgs;
-                                    setCache('jce_messages_' + state.currentChannel, msgs.slice(-50));
-                                    renderMessages();
+                                // Process for CMDs first
+                                const visible = processMessages([msg], false); // isHistory=false
+
+                                if (visible.length > 0) {
+                                    const m = visible[0];
+                                    const msgs = state.messages[state.currentChannel] || [];
+                                    if (!msgs.some(existing => existing.id === m.id)) {
+                                        msgs.push(m);
+                                        state.messages[state.currentChannel] = msgs;
+                                        setCache('jce_messages_' + state.currentChannel, msgs.slice(-50));
+                                        renderMessages();
+                                    }
+                                } else {
+                                    // It was a CMD, need to re-render if it was reaction
+                                    // Typing has its own render
+                                    if (msg.content.includes('::REACT::')) renderMessages();
                                 }
                             }
                         },
@@ -1231,6 +1410,42 @@
                 ).join('');
             }
 
+            function renderTyping() {
+                const el = $('typing-indicator');
+                const users = Object.values(state.typingUsers);
+                if (users.length === 0) {
+                    el.classList.remove('active');
+                    setTimeout(() => el.textContent = '', 300);
+                    return;
+                }
+                const names = users.map(u => u.name.split(' ')[0]);
+                const text = names.length > 3 ? `${names.length} people are typing...` :
+                    names.join(', ') + (names.length === 1 ? ' is ' : ' are ') + 'typing...';
+
+                el.textContent = text;
+                el.classList.add('active');
+            }
+
+            // Expose toggleReaction to window for onclick handlers
+            window.toggleReaction = function (msgId, emoji) {
+                if (!state.user) return;
+                // Optimistic update? No, let's wait for subscription or just fire and forget.
+                // Actually, for better UX, we should update local state Immediately.
+                // logic: toggle
+                if (!state.reactions[msgId]) state.reactions[msgId] = {};
+                if (!state.reactions[msgId][emoji]) state.reactions[msgId][emoji] = [];
+
+                const idx = state.reactions[msgId][emoji].indexOf(state.user.email); // Use email as ID
+                if (idx > -1) {
+                    state.reactions[msgId][emoji].splice(idx, 1);
+                } else {
+                    state.reactions[msgId][emoji].push(state.user.email);
+                }
+                renderMessages();
+
+                sendControlMessage('REACT', msgId, emoji, state.user.email);
+            };
+
             function renderMessages() {
                 const msgs = state.messages[state.currentChannel] || [];
                 if (!msgs.length) {
@@ -1238,15 +1453,31 @@
                     return;
                 }
                 els.messagesContainer.innerHTML = msgs.map(msg => {
-                    const isOwn = msg.email === state.user?.email || msg.userId === state.user?.id; // fallback
+                    const isOwn = msg.email === state.user?.email || msg.userId === state.user?.id;
                     const statusClass = msg.pending ? 'pending' : (msg.failed ? 'failed' : '');
-
                     const time = msg.createdAt ? new Date(msg.createdAt) : new Date(msg.timestamp);
                     const timeStr = !isNaN(time) ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
+                    // Reactions
+                    const msgReactions = state.reactions[msg.id] || {};
+                    const reactionsHtml = Object.entries(msgReactions).map(([emoji, users]) => {
+                        if (users.length === 0) return '';
+                        const isActive = users.includes(state.user.email);
+                        return `<button class="reaction-chip ${isActive ? 'active' : ''}" onclick="window.toggleReaction('${msg.id}','${emoji}')" title="${users.join(', ')}">${emoji} ${users.length}</button>`;
+                    }).join('');
+
                     return `<div class="message ${isOwn ? 'own' : 'other'} ${statusClass}">
                     ${!isOwn ? `<div class="sender-name">${msg.name || 'User'} <small style="opacity:0.7">(${msg.dept} - ${msg.year})</small></div>` : ''}
-                    <div class="message-bubble">${formatMessage(msg.content)}</div>
+                    <div class="message-bubble">
+                        ${formatMessage(msg.content)}
+                        <div class="reactions-list">${reactionsHtml}</div>
+                    </div>
+                    <div class="message-actions">
+                        <button class="reaction-btn" onclick="window.toggleReaction('${msg.id}', '❤️')">❤️</button>
+                        <button class="reaction-btn" onclick="window.toggleReaction('${msg.id}', '👍')">👍</button>
+                        <button class="reaction-btn" onclick="window.toggleReaction('${msg.id}', '😂')">😂</button>
+                        <button class="reaction-btn" onclick="window.toggleReaction('${msg.id}', '😮')">😮</button>
+                    </div>
                     <div class="message-meta"><span>${timeStr}</span></div>
                 </div>`;
                 }).join('');
@@ -1269,7 +1500,9 @@
 
                 if (state.amplifyReady) {
                     try {
-                        const msgs = await fetchMessages(channelId);
+                        state.reactions = {}; // Reset reactions on reload
+                        const rawMsgs = await fetchMessages(channelId);
+                        const msgs = processMessages(rawMsgs, true); // isHistory=true
                         state.messages[channelId] = msgs;
                         setCache('jce_messages_' + channelId, msgs.slice(-50));
                         renderMessages();
@@ -1286,6 +1519,11 @@
             async function sendMessage() {
                 const content = els.messageInput.value.trim();
                 if (!content || !state.user) return;
+
+                if (containsBadWords(content)) {
+                    alert("Please keep the language clean! 🚫");
+                    return;
+                }
 
                 const now = Date.now();
                 const msg = {
@@ -1351,8 +1589,15 @@
                 els.messageInput.addEventListener('keypress', e => {
                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
                 });
+                let typingTimer = null;
                 els.messageInput.addEventListener('input', function () {
                     this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px';
+
+                    // Throttle typing events
+                    if (!typingTimer) {
+                        sendControlMessage('TYPING', state.user.id, state.user.name);
+                        typingTimer = setTimeout(() => { typingTimer = null; }, 2000);
+                    }
                 });
                 els.channelsList.addEventListener('click', e => {
                     const btn = e.target.closest('.channel-btn');
