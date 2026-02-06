@@ -13,7 +13,8 @@
     <style>
         :root {
             --bg-dark: #000000;
-            --bg-darker: #111111;
+            --bg-darker: #000000;
+            /* Pure Black as requested */
             --primary: #a855f7;
             --primary-light: #e879f9;
             --glass: rgba(0, 0, 0, 0.85);
@@ -33,13 +34,33 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: black;
+            background: var(--bg-dark);
             color: white;
             height: 100vh;
             overflow: hidden;
             position: relative;
         }
 
+        /* --- Scrollbar Styling (Purple & Black) --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-light);
+        }
+
+        /* --- Background Animation --- */
         .stars-wrapper {
             position: fixed;
             top: 0;
@@ -58,7 +79,6 @@
             opacity: 0;
             animation: twinkle var(--duration) ease-in-out infinite;
             animation-delay: var(--delay);
-            will-change: opacity, transform;
         }
 
         @keyframes twinkle {
@@ -82,8 +102,8 @@
             width: 200%;
             height: 200%;
             animation: drift linear infinite;
-            opacity: 0.4;
-            will-change: transform;
+            opacity: 0.3;
+            /* Adjusted opacity for black bg */
         }
 
         .layer-1 {
@@ -114,41 +134,7 @@
             }
         }
 
-        .logo-container {
-            position: absolute;
-            top: clamp(2rem, 5vh, 4rem);
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            text-align: center;
-            width: 100%;
-            pointer-events: none;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .logo-text {
-            font-size: clamp(3rem, 10vw, 5.5rem);
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 10px 30px rgba(168, 85, 247, 0.3);
-            letter-spacing: -0.02em;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateX(-50%) translateY(0);
-            }
-
-            50% {
-                transform: translateX(-50%) translateY(-20px);
-            }
-        }
-
+        /* --- Login Components --- */
         .login-container {
             position: absolute;
             bottom: 0;
@@ -168,8 +154,8 @@
             padding: 2rem;
             width: 100%;
             max-width: 480px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--glass-border);
         }
 
         .form-group {
@@ -180,16 +166,15 @@
         .form-input,
         .form-select {
             width: 100%;
-            padding: 1rem;
+            padding: 1rem 1rem 0.5rem;
             padding-top: 1.5rem;
-            padding-bottom: 0.5rem;
-            border: 2px solid #e5e7eb;
+            border: 2px solid #333;
             border-radius: 12px;
             font-size: 1rem;
             font-family: inherit;
-            transition: all 0.3s;
-            background: white;
+            background: #111;
             color: var(--text-main);
+            transition: all 0.3s;
         }
 
         .form-label {
@@ -220,38 +205,6 @@
             font-weight: 600;
         }
 
-        .form-input.valid {
-            border-color: var(--success);
-        }
-
-        .shake {
-            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
-        }
-
-        @keyframes shake {
-
-            10%,
-            90% {
-                transform: translate3d(-1px, 0, 0);
-            }
-
-            20%,
-            80% {
-                transform: translate3d(2px, 0, 0);
-            }
-
-            30%,
-            50%,
-            70% {
-                transform: translate3d(-4px, 0, 0);
-            }
-
-            40%,
-            60% {
-                transform: translate3d(4px, 0, 0);
-            }
-        }
-
         .btn-primary {
             width: 100%;
             padding: 1rem;
@@ -274,25 +227,14 @@
             box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
         }
 
-        .btn-primary:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
+        /* --- Chat Layout --- */
         .chat-interface {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             background: var(--bg-dark);
-            z-index: 30;
-            display: flex;
             z-index: 30;
             display: flex;
             opacity: 0;
@@ -307,19 +249,6 @@
             transform: scale(1);
         }
 
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(var(--primary), var(--primary-light));
-            border-radius: 4px;
-        }
-
         .sidebar {
             width: 28%;
             min-width: 250px;
@@ -332,7 +261,7 @@
 
         .sidebar-header {
             padding: 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #333;
         }
 
         .user-profile {
@@ -363,10 +292,6 @@
         .user-info p {
             font-size: 0.75rem;
             color: var(--text-light);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 150px;
         }
 
         .channels-list {
@@ -429,59 +354,44 @@
 
         .chat-header {
             padding: 1rem 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #333;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
             z-index: 10;
-            flex-wrap: wrap;
-            gap: 0.5rem;
         }
 
-        .channel-info h2 {
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 50;
+        }
+
+        .desktop-header-title {
+            display: block;
+        }
+
+        .desktop-header-title h1 {
             font-size: 1.25rem;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        .connection-status {
-            display: none !important;
-        }
-
-
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            background: currentColor;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-
-            0% {
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-            }
-
-            70% {
-                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-            }
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
         }
 
         .messages-container {
@@ -494,11 +404,12 @@
             scroll-behavior: smooth;
         }
 
+        /* Message Styles */
         .message {
             max-width: 70%;
-            animation: slideIn 0.3s ease-out;
             display: flex;
             flex-direction: column;
+            animation: slideIn 0.3s ease-out;
         }
 
         .message.own {
@@ -528,12 +439,7 @@
             border-radius: 16px;
             word-wrap: break-word;
             line-height: 1.5;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
-        }
-
-        .message-bubble:hover {
-            transform: scale(1.01);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .message.own .message-bubble {
@@ -549,23 +455,6 @@
             border: 1px solid #333;
         }
 
-        .message-meta {
-            font-size: 0.75rem;
-            margin-bottom: 0.25rem;
-            opacity: 0.8;
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .message.own .message-meta {
-            justify-content: flex-end;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .message.other .message-meta {
-            color: var(--text-light);
-        }
-
         .sender-name {
             font-weight: 600;
             font-size: 0.75rem;
@@ -577,246 +466,13 @@
             display: none;
         }
 
-        .message.pending .message-bubble {
+        .message-meta {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
             opacity: 0.7;
         }
 
-        .message.failed .message-bubble {
-            border: 2px solid var(--error);
-        }
-
-        .input-area {
-            padding: 1.5rem 1.5rem 0.5rem 1.5rem;
-            border-top: 1px solid #333;
-            background: var(--bg-darker);
-            display: flex;
-            gap: 1rem;
-            align-items: flex-end;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 1rem;
-            border: 2px solid #333;
-            border-radius: 12px;
-            resize: none;
-            height: 56px;
-            max-height: 120px;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-            background: #222;
-        }
-
-        .chat-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .send-btn {
-            width: 56px;
-            height: 56px;
-            border-radius: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-
-        .send-btn:hover {
-            background: var(--bg-dark);
-            transform: scale(1.05);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .status-message {
-            text-align: center;
-            padding: 2rem;
-            color: #9ca3af;
-        }
-
-        .status-message.error {
-            color: var(--error);
-        }
-
-        .logout-btn {
-            background: none;
-            border: 1px solid #e5e7eb;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            color: var(--text-light);
-            transition: all 0.2s;
-        }
-
-        .logout-btn:hover {
-            border-color: var(--error);
-            color: var(--error);
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100%;
-                width: 280px;
-                z-index: 40;
-                transform: translateX(-100%);
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                border-right: 1px solid #333;
-                background: var(--bg-darker);
-                padding: 0;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .sidebar.active {
-                transform: translateX(0);
-                box-shadow: 20px 0 40px rgba(0, 0, 0, 0.5);
-            }
-
-            .mobile-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 39;
-                display: none;
-                backdrop-filter: blur(3px);
-            }
-
-            .sidebar.active+.mobile-overlay {
-                display: block;
-            }
-
-            .mobile-menu-btn {
-                display: block;
-            }
-
-            .chat-header {
-                padding-left: 0.5rem;
-            }
-
-            .sidebar-header {
-                display: block;
-                /* Show header in sidebar again */
-            }
-
-            .channels-list {
-                display: block;
-                /* Vertical list */
-                padding: 1rem;
-            }
-
-            .channel-btn {
-                width: 100%;
-                margin-bottom: 0.5rem;
-                background: transparent;
-                white-space: normal;
-            }
-
-            .channel-btn.active::before {
-                display: block;
-                /* Restore indicator */
-            }
-
-            .channel-btn.active {
-                background: var(--primary);
-                color: white;
-            }
-
-            .main-chat {
-                height: calc(100% - 60px);
-                order: 1;
-            }
-
-            .logo-text {
-                font-size: 3rem;
-            }
-
-            .login-container {
-                padding-bottom: 2rem;
-            }
-
-            .input-area {
-                padding: 1rem;
-            }
-        }
-
-        .message-bubble strong {
-            font-weight: 700;
-        }
-
-        .message-bubble em {
-            font-style: italic;
-        }
-
-        .message-bubble a {
-            text-decoration: underline;
-            color: inherit;
-        }
-
-        .message-bubble code {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-family: monospace;
-        }
-
-
-        .modal-input {
-            width: 100%;
-            padding: 1rem;
-            background: #222;
-            border: 1px solid #333;
-            border-radius: 8px;
-            color: white;
-            font-family: inherit;
-            margin-bottom: 1rem;
-            resize: none;
-        }
-
-        .desktop-header-title {
-            display: none;
-        }
-
-        @media (min-width: 769px) {
-            .desktop-header-title {
-                display: block;
-            }
-        }
-
-
-        /* Typing Indicator */
-        .typing-indicator {
-            padding: 0.5rem 1rem;
-            font-size: 0.75rem;
-            color: var(--text-light);
-            font-style: italic;
-            height: 24px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .typing-indicator.active {
-            opacity: 1;
-        }
-
-        /* Reactions */
+        /* Interactive Elements */
         .message-actions {
             display: flex;
             gap: 0.5rem;
@@ -829,14 +485,30 @@
             opacity: 1;
         }
 
+        .msg-action-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 1.1rem;
+            padding: 4px;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .msg-action-btn:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
         .reaction-btn {
             background: none;
             border: none;
             cursor: pointer;
             opacity: 0.5;
-            transition: transform 0.2s;
             font-size: 1rem;
             padding: 0;
+            transition: transform 0.2s;
         }
 
         .reaction-btn:hover {
@@ -869,933 +541,945 @@
             border-color: var(--primary);
             color: var(--primary);
         }
+
+        .typing-indicator {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-style: italic;
+            height: 24px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .typing-indicator.active {
+            opacity: 1;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+            /* Reduced bottom space */
+            border-top: 1px solid #333;
+            background: var(--bg-darker);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #333;
+            border-radius: 12px;
+            resize: none;
+            height: 56px;
+            max-height: 120px;
+            font-family: inherit;
+            font-size: 1rem;
+            background: #111;
+            color: white;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-light);
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .modal-body {
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .modal-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--text-light);
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 1rem;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            resize: none;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+
+            body,
+            .sidebar,
+            .main-chat,
+            .chat-header {
+                background: #000000 !important;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 280px;
+                z-index: 40;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                border-right: 1px solid #333;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+                box-shadow: 20px 0 40px rgba(0, 0, 0, 0.5);
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .desktop-header-title {
+                display: none;
+            }
+
+            .mobile-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 39;
+                display: none;
+                backdrop-filter: blur(3px);
+            }
+
+            .sidebar.active+.mobile-overlay {
+                display: block;
+            }
+
+            /* Ensure buttons are large enough */
+            .msg-action-btn,
+            .reaction-btn {
+                padding: 8px;
+                font-size: 1.2rem;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div class="stars-wrapper" id="stars-container">
+    <div class="stars-wrapper">
         <div class="layer layer-1"></div>
         <div class="layer layer-2"></div>
         <div class="layer layer-3"></div>
     </div>
 
-    <!-- Login Container -->
+    <!-- Modals Container -->
+    <div id="modal-container"></div>
+
+    <!-- Login View -->
     <div class="login-container" id="login-view">
-        <div class="login-card" id="login-card-content">
-            <!-- content dynamically rendered -->
-            <div style="text-align: center; color: white;">Initializing secure connection...</div>
+        <div class="login-card">
+            <h1 class="logo-text" style="font-size: 2.5rem; margin-bottom: 1.5rem; text-align: center;">JCE CHAT</h1>
+            <div id="login-form">
+                <div class="form-group">
+                    <input type="text" class="form-input" id="login-email" placeholder=" " autocomplete="username">
+                    <label class="form-label">Email ID</label>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-input" id="login-pass" placeholder=" "
+                        autocomplete="current-password">
+                    <label class="form-label">Password</label>
+                </div>
+                <button class="btn-primary" id="login-btn">Sign In</button>
+                <p style="text-align: center; margin-top: 1rem; color: var(--text-light); cursor: pointer;"
+                    id="show-signup">New here? Creates Account</p>
+            </div>
+
+            <div id="signup-form" style="display: none;">
+                <div class="form-group">
+                    <input type="text" class="form-input" id="signup-name" placeholder=" ">
+                    <label class="form-label">Full Name</label>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-input" id="signup-email" placeholder=" ">
+                    <label class="form-label">Email Address</label>
+                </div>
+                <div class="form-group">
+                    <select class="form-select" id="signup-dept">
+                        <option value="" disabled selected></option>
+                        <option value="CSE">CSE</option>
+                        <option value="ECE">ECE</option>
+                        <option value="EEE">EEE</option>
+                        <option value="MECH">MECH</option>
+                        <option value="IT">IT</option>
+                        <option value="AIDS">AI & DS</option>
+                    </select>
+                    <label class="form-label">Department</label>
+                </div>
+                <div class="form-group">
+                    <select class="form-select" id="signup-year">
+                        <option value="" disabled selected></option>
+                        <option value="I">I Year</option>
+                        <option value="II">II Year</option>
+                        <option value="III">III Year</option>
+                        <option value="IV">IV Year</option>
+                    </select>
+                    <label class="form-label">Year</label>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-input" id="signup-pass" placeholder=" ">
+                    <label class="form-label">Password</label>
+                </div>
+                <button class="btn-primary" id="signup-btn">Create Account</button>
+                <p style="text-align: center; margin-top: 1rem; color: var(--text-light); cursor: pointer;"
+                    id="show-login">Already have an account? Sign In</p>
+            </div>
+
+            <div id="verify-form" style="display: none;">
+                <p style="color: var(--text-main); margin-bottom: 1rem; text-align: center;">Enter the verification code
+                    sent to your email.</p>
+                <div class="form-group">
+                    <input type="text" class="form-input" id="verify-code" placeholder=" ">
+                    <label class="form-label">Verification Code</label>
+                </div>
+                <button class="btn-primary" id="verify-btn">Verify Account</button>
+            </div>
         </div>
     </div>
 
-    <div id="modal-container"></div>
-
+    <!-- Chat View -->
     <div class="chat-interface" id="chat-view">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div style="margin-bottom: 1.5rem; text-align: left;">
-                    <h1
-                        style="font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--primary-light)); background-clip: text; -webkit-background-clip: text; color: transparent;">
-                        JCE LIVE CHAT</h1>
-                </div>
-                <div class="user-profile">
+                <h1
+                    style="font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; background-clip: text; color: transparent;">
+                    JCE LIVE CHAT</h1>
+                <div class="user-profile" style="margin-top: 1rem;">
                     <div class="avatar" id="user-avatar">JC</div>
                     <div class="user-info">
-                        <h3 id="user-name-display">User</h3>
-                        <p id="user-dept-display">Student</p>
+                        <h3 id="user-name">User</h3>
+                        <p id="user-details">Student</p>
                     </div>
                 </div>
+                <button class="logout-btn" id="logout-btn" style="margin-top: 1rem; width: 100%;">Logout</button>
             </div>
             <div class="channels-list" id="channels-list"></div>
         </aside>
+
         <div class="mobile-overlay" id="mobile-overlay"></div>
+
         <main class="main-chat">
             <header class="chat-header">
-                <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="header-left">
                     <button class="mobile-menu-btn" id="menu-toggle">☰</button>
-                    <div class="channel-info" style="display:inline-block">
+                    <div class="channel-info">
                         <h2 id="current-channel-name">📢 General</h2>
                     </div>
                 </div>
-                <!-- Desktop Header Title -->
+
                 <div class="desktop-header-title">
-                    <h1
-                        style="font-size: 1.25rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--primary-light)); background-clip: text; -webkit-background-clip: text; color: transparent; margin: 0;">
-                        JCE LIVE CHAT</h1>
+                    <h1>JCE LIVE CHAT</h1>
                 </div>
+
                 <div class="header-actions">
-                    <div class="connection-status connecting" id="connection-status">
-                        <div class="dot"></div><span>Connecting...</span>
-                    </div>
-                    <div class="connection-status connecting" id="connection-status">
-                        <div class="dot"></div><span>Connecting...</span>
-                    </div>
-                    <button class="logout-btn" id="logout-btn">Logout</button>
+                    <div class="connection-status" id="connection-status"></div>
                 </div>
             </header>
+
             <div class="messages-container" id="messages-container"></div>
+
             <div class="typing-indicator" id="typing-indicator"></div>
+
             <div class="input-area">
-                <textarea class="chat-input" id="message-input" placeholder="Type a message..." rows="1"
-                    maxlength="1000"></textarea>
-                <button class="send-btn" id="send-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                </button>
+                <textarea class="chat-input" id="message-input" placeholder="Type a message..." rows="1"></textarea>
+                <button class="send-btn" id="send-btn">➤</button>
             </div>
         </main>
     </div>
 
-    <!-- AWS Amplify v4.3.46 via Cloudflare CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-amplify/4.3.46/aws-amplify.min.js"></script>
-
+    <script src="https://unpkg.com/aws-amplify@4.3.46/dist/aws-amplify.min.js"></script>
     <script>
-        (function () {
-            'use strict';
+        // --- CONFIGURATION ---
+        const AWS_CONFIG = {
+            aws_project_region: "eu-north-1",
+            aws_cognito_identity_pool_id: "eu-north-1:99380961-d64e-4e4f-b67f-94ba057613a0",
+            aws_cognito_region: "eu-north-1",
+            aws_user_pools_id: "eu-north-1_7Jq7pXw2x",
+            aws_user_pools_web_client_id: "7tq712c96rfovg9q0o5764dffg",
+            aws_appsync_graphqlEndpoint: "https://b2c556ulx5ax5n44qg5j4f6c4y.appsync-api.eu-north-1.amazonaws.com/graphql",
+            aws_appsync_region: "eu-north-1",
+            aws_appsync_authenticationType: "AMAZON_COGNITO_USER_POOLS"
+        };
+        const QUERIES = {
+            list: `query ListMessages($filter: ModelMessageFilterInput, $limit: Int) { listMessages(filter: $filter, limit: $limit) { items { id channel content email name dept year timestamp createdAt } } }`,
+            create: `mutation CreateMessage($input: CreateMessageInput!) { createMessage(input: $input) { id channel content email name dept year timestamp createdAt } }`,
+            subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channel content email name dept year timestamp createdAt } }`
+        };
+        const CHANNELS = ['General', 'CSE', 'ECE', 'EEE', 'MECH', 'IT', 'AI & DS', 'Announcements'];
+        const BAD_WORDS = ["fuck", "shit", "bitch", "asshole", "cunt", "dick", "pussy", "bastard", "idiot", "stupid", "mayiru", "mair", "thevdia", "thevidiya", "punda", "pundai", "ommale", "ommala", "sunni", "poolu", "kuyyam", "othu", "otha", "omma", "baadu", "item", "potte"];
+        const CMD_PREFIX = "CMD::";
 
-            const AWS_CONFIG = {
-                Auth: {
-                    region: 'ap-south-1',
-                    userPoolId: 'ap-south-1_ZqT8AaT5Y',
-                    userPoolWebClientId: '4k2pg0p5cl5kciuqahlq4kqfob',
-                },
-                aws_appsync_graphqlEndpoint: 'https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql',
-                aws_appsync_region: 'ap-south-1',
-                aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS'
-            };
+        // --- STATE ---
+        const state = {
+            user: null, // { id, email, name, dept, year }
+            currentChannel: 'General',
+            messages: {}, // { channel: [msgs] }
+            subscription: null,
+            amplifyReady: false,
+            authState: 'signIn',
+            pendingUser: null,
+            typingUsers: {},
+            reactions: {} // { msgId: { emoji: [userIds] } }
+        };
+        let typingTimer = null;
 
-            const CHANNELS = [
-                { id: 'General', icon: '📢', name: 'General' },
-                { id: 'Announcements', icon: '📫', name: 'Announcements' },
-                { id: 'Projects', icon: '💻', name: 'Projects' },
-                { id: 'LinkedIn', icon: '💼', name: 'LinkedIn' },
-                { id: 'Startups', icon: '🚀', name: 'Startups' },
-                { id: 'Academics', icon: '🎓', name: 'Academics' }
-            ];
+        // --- ELEMENTS ---
+        const $ = id => document.getElementById(id);
+        const els = {};
 
-            // Use fields matching the Server Schema
-            const QUERIES = {
-                list: `query ListMessages($filter: ModelMessageFilterInput, $limit: Int) { listMessages(filter: $filter, limit: $limit) { items { id channel content email name dept year timestamp createdAt } } }`,
-                create: `mutation CreateMessage($input: CreateMessageInput!) { createMessage(input: $input) { id channel content email name dept year timestamp createdAt } }`,
-                subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channel content email name dept year timestamp createdAt } }`
-            };
-
-            const CMD_PREFIX = "CMD::";
-            // Simple list of common bad words (English & Tamil phonetic/transliterated)
-            // Note: This is a basic filter.
-            const BAD_WORDS = [
-                // English
-                "fuck", "shit", "bitch", "asshole", "cunt", "dick", "pussy", "bastard", "idiot", "stupid",
-                // Tamil (Phonetic/Common)
-                "mayiru", "mair", "thevdia", "thevidiya", "punda", "pundai", "ommale", "ommala", "sunni", "poolu", "kuyyam",
-                "othu", "otha", "omma", "baadu", "item", "potte"
-            ];
-
-            function containsBadWords(text) {
-                const lower = text.toLowerCase();
-                return BAD_WORDS.some(word => lower.includes(word));
+        // --- INITIALIZATION ---
+        function generateStars() {
+            const container = document.querySelector('.stars-wrapper');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.setProperty('--duration', Math.random() * 3 + 2 + 's');
+                star.style.setProperty('--delay', Math.random() * 5 + 's');
+                container.appendChild(star);
             }
+        }
 
-            const state = {
-                user: null, // { id, email, name, dept, year }
-                currentChannel: 'General',
-                messages: {},
-                subscription: null,
-                amplifyReady: false,
-                authState: 'signIn', // 'signIn', 'signUp', 'confirmSignUp'
-                pendingUser: null, // Stores email/pass during verification step
-                typingUsers: {}, // { userId: { name, timer } }
-                reactions: {} // { msgId: { emoji: [userIds] } }
-            };
-            let API = null;
-            let Auth = null;
+        async function initAmplify() {
+            try {
+                if (window.aws_amplify) {
+                    window.aws_amplify.Amplify.configure(AWS_CONFIG);
+                    state.amplifyReady = true;
+                    checkUser();
+                }
+            } catch (e) { console.error("Amplify Error:", e); }
+        }
 
-            const $ = id => document.getElementById(id);
-            const els = {};
-
-            function getCache(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
-            function setCache(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch { } }
-            function uuid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
-
-            async function sendControlMessage(type, ...args) {
-                if (!state.user) return;
-                const content = CMD_PREFIX + type + "::" + args.join("::");
-                try {
-                    const msg = {
-                        id: uuid(),
-                        channel: state.currentChannel,
-                        content,
-                        email: state.user.email,
-                        name: state.user.name,
-                        dept: state.user.dept || 'Student',
-                        year: state.user.year || 'I',
-                        timestamp: Date.now(),
-                        createdAt: new Date().toISOString()
-                    };
-                    await createMessage(msg);
-                } catch (e) { console.error("CMD failed", e); }
+        async function checkUser() {
+            try {
+                const user = await window.aws_amplify.Auth.currentAuthenticatedUser();
+                state.user = {
+                    id: user.username,
+                    email: user.attributes.email,
+                    name: user.attributes.name || user.attributes.email.split('@')[0],
+                    dept: user.attributes['custom:department'] || 'Student',
+                    year: user.attributes['custom:year'] || 'I'
+                };
+                showChat();
+            } catch (e) {
+                showLogin();
             }
+        }
 
-            function processMessages(messages, isHistory = false) {
-                const visible = [];
-                messages.forEach(msg => {
-                    if (msg.content.startsWith(CMD_PREFIX)) {
-                        const parts = msg.content.split('::');
-                        const cmd = parts[1];
+        function showLogin() {
+            $('login-view').style.opacity = '1';
+            $('login-view').style.pointerEvents = 'all';
+            $('chat-view').classList.remove('active');
+        }
 
-                        // Handle Reactions
-                        if (cmd === 'REACT' && parts.length >= 5) {
-                            const [_, __, msgId, emoji, userId] = parts;
-                            if (!state.reactions[msgId]) state.reactions[msgId] = {};
-                            if (!state.reactions[msgId][emoji]) state.reactions[msgId][emoji] = [];
-                            if (!state.reactions[msgId][emoji].includes(userId)) {
-                                state.reactions[msgId][emoji].push(userId);
-                            }
-                        }
-                        else if (cmd === 'UNREACT' && parts.length >= 5) {
-                            const [_, __, msgId, emoji, userId] = parts;
-                            if (state.reactions[msgId] && state.reactions[msgId][emoji]) {
-                                const idx = state.reactions[msgId][emoji].indexOf(userId);
-                                if (idx > -1) state.reactions[msgId][emoji].splice(idx, 1);
-                            }
-                        }
-                        // Handle Edit
-                        else if (cmd === 'EDIT' && parts.length >= 4) {
-                            const [_, __, msgId] = parts;
-                            // Reconstruct content (in case it had :: inside)
-                            const newContent = parts.slice(3).join('::');
+        function showChat() {
+            $('login-view').style.transform = 'translateY(-100%)';
+            $('login-view').style.opacity = '0';
+            setTimeout(() => $('login-view').style.display = 'none', 500);
 
-                            // Update local state if message exists
-                            // We need to search all channels? No, usually just current.
-                            // But for correctness, let's just check current channel messages.
-                            if (state.messages[state.currentChannel]) {
-                                const m = state.messages[state.currentChannel].find(x => x.id === msgId);
-                                if (m) {
-                                    m.content = newContent;
-                                    m.isEdited = true;
-                                    renderMessages();
-                                }
-                            }
-                        }
-                        // Handle Delete
-                        else if (cmd === 'DELETE' && parts.length >= 3) {
-                            const [_, __, msgId] = parts;
-                            if (state.messages[state.currentChannel]) {
-                                const mIndex = state.messages[state.currentChannel].findIndex(x => x.id === msgId);
-                                if (mIndex > -1) {
-                                    state.messages[state.currentChannel][mIndex].deleted = true;
-                                    renderMessages();
-                                }
-                            }
-                        }
-                        // Handle Typing (only real-time)
-                        else if (cmd === 'TYPING' && parts.length >= 4 && !isHistory) {
-                            const [_, __, userId, name] = parts;
-                            handleTyping(userId, name);
-                        }
-                    } else {
-                        if (!msg.deleted) visible.push(msg); // Only show non-deleted
-                    }
+            $('chat-view').classList.add('active');
+            updateUserProfile();
+            loadChannel(state.currentChannel);
+        }
+
+        function updateUserProfile() {
+            $('user-name').textContent = state.user.name;
+            $('user-details').textContent = `${state.user.dept} • ${state.user.year}`;
+            $('user-avatar').textContent = state.user.name.charAt(0).toUpperCase();
+        }
+
+        // --- AUTHENTICATION ---
+        async function signUp() {
+            const email = $('signup-email').value;
+            const password = $('signup-pass').value;
+            const name = $('signup-name').value;
+            const dept = $('signup-dept').value;
+            const year = $('signup-year').value;
+
+            if (!email || !password || !name || !dept || !year) return alert("Fill all fields");
+
+            try {
+                await window.aws_amplify.Auth.signUp({
+                    username: email,
+                    password,
+                    attributes: { email, name, 'custom:department': dept, 'custom:year': year }
                 });
-                return visible;
+                state.pendingUser = { email, password };
+                $('signup-form').style.display = 'none';
+                $('verify-form').style.display = 'block';
+            } catch (e) { alert(e.message); }
+        }
+
+        async function verify() {
+            const code = $('verify-code').value;
+            try {
+                await window.aws_amplify.Auth.confirmSignUp(state.pendingUser.email, code);
+                await window.aws_amplify.Auth.signIn(state.pendingUser.email, state.pendingUser.password);
+                checkUser();
+            } catch (e) { alert(e.message); }
+        }
+
+        async function signIn() {
+            const email = $('login-email').value;
+            const password = $('login-pass').value;
+            try {
+                await window.aws_amplify.Auth.signIn(email, password);
+                checkUser();
+            } catch (e) { alert("Login failed: " + e.message); }
+        }
+
+        async function logout() {
+            await window.aws_amplify.Auth.signOut();
+            window.location.reload();
+        }
+
+        // --- MESSAGING LOGIC ---
+        function uuid() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => (c === 'x' ? Math.random() * 16 | 0 : (Math.random() * 16 | 0 & 0x3 | 0x8)).toString(16)); }
+
+        function containsBadWords(text) {
+            const words = text.toLowerCase().split(/[\s,.]+/);
+            return words.some(w => BAD_WORDS.includes(w));
+        }
+
+        function renderChannels() {
+            els.channelsList.innerHTML = CHANNELS.map(c =>
+                `<button class="channel-btn ${c === state.currentChannel ? 'active' : ''}" data-channel="${c}">
+                    <span>#</span> ${c}
+                </button>`
+            ).join('');
+        }
+
+        async function loadChannel(channel) {
+            state.currentChannel = channel;
+            $('current-channel-name').textContent = "📢 " + channel;
+
+            // Mobile: Close sidebar
+            if (window.innerWidth <= 768) els.sidebar.classList.remove('active');
+
+            renderChannels();
+
+            if (state.subscription) { state.subscription.unsubscribe(); state.subscription = null; }
+
+            // Load Cache
+            const cache = getCache('jce_messages_' + channel);
+            if (cache) {
+                state.messages[channel] = cache;
+                // Re-process to handle edits/deletes from cache if any
+                processMessages(state.messages[channel], true);
             }
 
-            function handleTyping(userId, name) {
-                if (!state.user || userId === state.user.email) return;
-                // Note: using email as ID based on schema usage in sendMessage
+            renderMessages(); // Initial render
 
-                const now = Date.now();
-                state.typingUsers[userId] = { name, time: now };
-                renderTyping();
-
-                setTimeout(() => {
-                    if (state.typingUsers[userId] && state.typingUsers[userId].time === now) {
-                        delete state.typingUsers[userId];
-                        renderTyping();
-                    }
-                }, 3000);
-            }
-
-            function setConnectionStatus(status) {
-                const el = els.connectionStatus;
-                if (!el) return;
-                el.className = 'connection-status ' + status;
-                const labels = { online: '● Connected', offline: '○ Offline', connecting: '◐ Connecting...' };
-                el.innerHTML = `<div class="dot"></div><span>${labels[status]}</span>`;
-            }
-
-            function formatMessage(text) {
-                if (!text) return '';
-                return text.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/`(.*?)`/g, '<code>$1</code>')
-                    .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
-            }
-
-            function waitForAmplify(callback, retries = 20, delay = 250) {
-                const amplifyObj = (window.aws_amplify && window.aws_amplify.Amplify) || window.Amplify;
-                if (amplifyObj) {
-                    callback(amplifyObj);
-                } else if (retries > 0) {
-                    setTimeout(() => waitForAmplify(callback, retries - 1, delay), delay);
-                } else {
-                    console.error("Amplify failed to load after multiple attempts.");
-                    setConnectionStatus('offline');
-                    showModal({ title: 'Error', body: 'Error loading chat system. Please refresh the page.', showCancel: false });
-                }
-            }
-
-            function initAmplify() {
-                setConnectionStatus('connecting');
-
-                waitForAmplify((AmplifyInstance) => {
-                    try {
-                        AmplifyInstance.configure(AWS_CONFIG);
-                        API = (window.aws_amplify && window.aws_amplify.API) || AmplifyInstance.API;
-                        Auth = (window.aws_amplify && window.aws_amplify.Auth) || AmplifyInstance.Auth;
-                        state.amplifyReady = true;
-                        console.log('✅ AWS Amplify initialized successfully');
-                        checkAuthSession();
-                    } catch (e) {
-                        console.error('Amplify configuration error:', e);
-                        setConnectionStatus('offline');
-                    }
-                });
-            }
-
-            async function checkAuthSession() {
-                try {
-                    const cognitoUser = await Auth.currentAuthenticatedUser();
-                    // Load user attributes
-                    const attributes = cognitoUser.attributes || {};
-                    // 'custom:dept' or standard attributes depending on setup. 
-                    // Schema requires dept/year, so we should try to save them in attributes if possible, or default.
-                    state.user = {
-                        id: cognitoUser.username,
-                        email: attributes.email || cognitoUser.username,
-                        name: attributes.name || attributes.email?.split('@')[0] || 'User',
-                        dept: attributes['custom:dept'] || 'Student',
-                        year: attributes['custom:year'] || 'I'
-                    };
-                    setConnectionStatus('online');
-                    showChat();
-                } catch (e) {
-                    console.log('No active session, showing login');
-                    setConnectionStatus('online');
-                    renderAuthForm();
-                }
-            }
-
-            // --- AUTH FUNCTIONS ---
-
-            async function handleSignUp(email, password, name, dept, year) {
-                try {
-                    updateAuthUI('Creating account...', true, '');
-
-                    // We can pass custom attributes if defined in Cognito User Pool, 
-                    // otherwise just pass standard ones.
-                    // Assuming custom:dept and custom:year MIGHT exist, but let's stick to standard required first.
-                    // If your Cognito pool doesn't have custom attributes, these will be ignored or cause error if strict.
-                    // For safety, we only send standard attributes unless required.
-                    const attributes = { email, name };
-                    // If you want to store dept/year in Cognito, you need to add custom attributes in console.
-                    // For now, we'll store them in local state for the first session.
-
-                    await Auth.signUp({
-                        username: email,
-                        password: password,
-                        attributes
-                    });
-
-                    state.pendingUser = { email, password, name, dept, year };
-                    state.authState = 'confirmSignUp';
-                    renderAuthForm();
-                } catch (e) {
-                    console.error('Sign up error:', e);
-                    updateAuthUI('Sign Up', false, e.message || 'Sign up failed');
-                }
-            }
-
-            async function handleConfirmSignUp(code) {
-                try {
-                    updateAuthUI('Verifying...', true, '');
-
-                    await Auth.confirmSignUp(state.pendingUser.email, code);
-
-                    // Auto sign in 
-                    await Auth.signIn(state.pendingUser.email, state.pendingUser.password);
-
-                    // Update user state manually since fetch usually gets attributes from server
-                    state.user = {
-                        id: state.pendingUser.email,
-                        email: state.pendingUser.email,
-                        name: state.pendingUser.name,
-                        dept: state.pendingUser.dept,
-                        year: state.pendingUser.year
-                    };
-
-                    setConnectionStatus('online');
-                    showChat();
-                } catch (e) {
-                    console.error('Confirm error:', e);
-                    updateAuthUI('Verify', false, e.message || 'Verification failed');
-                }
-            }
-
-            async function handleSignIn(email, password) {
-                try {
-                    updateAuthUI('Signing in...', true, '');
-                    await Auth.signIn(email, password);
-                    await checkAuthSession();
-                } catch (e) {
-                    console.error('Sign in error:', e);
-                    if (e.code === 'UserNotConfirmedException') {
-                        state.pendingUser = { email, password };
-                        state.authState = 'confirmSignUp';
-                        renderAuthForm();
-                    } else {
-                        updateAuthUI('Sign In', false, e.message || 'Sign in failed');
-                    }
-                }
-            }
-
-            function updateAuthUI(btnText, disabled, errorMsg) {
-                const btn = $('auth-btn');
-                const err = $('auth-error');
-                if (btn) {
-                    btn.textContent = btnText;
-                    btn.disabled = disabled;
-                }
-                if (err) err.textContent = errorMsg;
-            }
-
-            function renderAuthForm() {
-                const isSignUp = state.authState === 'signUp';
-                const isConfirm = state.authState === 'confirmSignUp';
-                let html = '';
-
-                if (isConfirm) {
-                    html = `
-                        <form id="auth-form-submit">
-                            <h2 style="margin-bottom:1.5rem; text-align:center;">Verify Email 📧</h2>
-                            <p style="text-align:center; color:#cbd5e1; margin-bottom:1.5rem;">
-                                We sent a code to ${state.pendingUser?.email || 'your email'}
-                            </p>
-                            <div class="form-group">
-                                <input type="text" class="form-input" id="auth-code" placeholder=" " required autocomplete="one-time-code">
-                                <label class="form-label">Verification Code</label>
-                            </div>
-                            <div id="auth-error" style="color: var(--error); font-size: 0.875rem; margin-bottom: 1rem;"></div>
-                            <button type="submit" class="btn-primary" id="auth-btn">Verify Account</button>
-                            <button type="button" id="auth-back" style="background:none; border:none; color:var(--text-light); width:100%; margin-top:1rem; cursor:pointer;">Back</button>
-                        </form>
-                    `;
-                } else {
-                    html = `
-                        <form id="auth-form-submit">
-                            <h2 style="margin-bottom:1.5rem; text-align:center;">${isSignUp ? 'Join JCE Chat 🚀' : 'Welcome Back 👋'}</h2>
-                            ${isSignUp ? `
-                                <div class="form-group">
-                                    <input type="text" class="form-input" id="auth-name" placeholder=" " required autocomplete="name">
-                                    <label class="form-label">Full Name</label>
-                                </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                    <div class="form-group">
-                                        <select class="form-select" id="auth-dept" required>
-                                            <option value="" disabled selected></option>
-                                            <option>CSE</option><option>ECE</option><option>IT</option>
-                                            <option>MECH</option><option>CIVIL</option><option>MBA</option>
-                                        </select>
-                                        <label class="form-label">Dept</label>
-                                    </div>
-                                    <div class="form-group">
-                                        <select class="form-select" id="auth-year" required>
-                                            <option value="" disabled selected></option>
-                                            <option>I</option><option>II</option><option>III</option><option>IV</option>
-                                        </select>
-                                        <label class="form-label">Year</label>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            <div class="form-group">
-                                <input type="email" class="form-input" id="auth-email" placeholder=" " required autocomplete="email">
-                                <label class="form-label">JCE Email</label>
-                            </div>
-                            <div class="form-group">
-                                <input type="password" class="form-input" id="auth-password" placeholder=" " required autocomplete="${isSignUp ? 'new-password' : 'current-password'}" minlength="8">
-                                <label class="form-label">Password</label>
-                            </div>
-                            <div id="auth-error" style="color: var(--error); font-size: 0.875rem; margin-bottom: 1rem;"></div>
-                            <button type="submit" class="btn-primary" id="auth-btn">${isSignUp ? 'Sign Up' : 'Sign In'}</button>
-                            <p style="text-align: center; margin-top: 1rem; color: var(--text-light); font-size: 0.875rem;">
-                                ${isSignUp ? 'Already have an account?' : "Don't have an account?"}
-                                <a href="#" id="auth-toggle" style="color: var(--primary); text-decoration: none; font-weight: 600;">
-                                    ${isSignUp ? 'Sign In' : 'Create Account'}
-                                </a>
-                            </p>
-                        </form>
-                    `;
-                }
-
-                const card = $('login-card-content');
-                if (card) {
-                    card.innerHTML = html;
-
-                    // Attach listeners after HTML injection
-                    const form = document.getElementById('auth-form-submit');
-                    if (form) {
-                        form.addEventListener('submit', (e) => {
-                            e.preventDefault();
-                            handleAuthSubmit();
-                        });
-                    }
-
-                    const toggle = $('auth-toggle');
-                    if (toggle) {
-                        toggle.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            state.authState = isSignUp ? 'signIn' : 'signUp';
-                            renderAuthForm();
-                        });
-                    }
-
-                    const back = $('auth-back');
-                    if (back) {
-                        back.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            state.authState = 'signIn';
-                            renderAuthForm();
-                        });
-                    }
-                }
-            }
-
-            function handleAuthSubmit() {
-                if (state.authState === 'confirmSignUp') {
-                    const code = $('auth-code').value.trim();
-                    if (code) handleConfirmSignUp(code);
-                } else if (state.authState === 'signUp') {
-                    const name = $('auth-name').value.trim();
-                    const email = $('auth-email').value.trim();
-                    const pass = $('auth-password').value;
-                    const dept = $('auth-dept').value;
-                    const year = $('auth-year').value;
-                    if (name && email && pass && dept && year) {
-                        handleSignUp(email, pass, name, dept, year);
-                    }
-                } else {
-                    const email = $('auth-email').value.trim();
-                    const pass = $('auth-password').value;
-                    if (email && pass) handleSignIn(email, pass);
-                }
-            }
-
-            // --- DATA FUNCTIONS ---
-
-            async function fetchMessages(channelId) {
-                if (!API) throw new Error('API not ready');
-                const result = await API.graphql({
+            // Fetch
+            try {
+                const filter = { channel: { eq: channel } };
+                const res = await window.aws_amplify.API.graphql({
                     query: QUERIES.list,
-                    variables: { filter: { channel: { eq: channelId } }, limit: 100 }
+                    variables: { filter, limit: 100 },
+                    authMode: 'AMAZON_COGNITO_USER_POOLS'
                 });
-                return result.data.listMessages.items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            }
+                // Sort by createdAt
+                const items = res.data.listMessages.items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                state.messages[channel] = items;
+                processMessages(items, true); // Process history for CMDs
+                setCache('jce_messages_' + channel, items.slice(-50));
+            } catch (e) { console.error("Fetch error", e); }
 
-            async function createMessage(msg) {
-                if (!API) throw new Error('API not ready');
-                return API.graphql({ query: QUERIES.create, variables: { input: msg } });
-            }
+            subscribeToChannel(channel);
+        }
 
-            function subscribeToChannel(channelId) {
-                if (state.subscription) {
-                    state.subscription.unsubscribe();
-                    state.subscription = null;
-                }
-                if (!API) return;
+        function subscribeToChannel(channel) {
+            try {
+                state.subscription = window.aws_amplify.API.graphql({
+                    query: QUERIES.subscribe,
+                    variables: { filter: { channel: { eq: channel } } },
+                    authMode: 'AMAZON_COGNITO_USER_POOLS'
+                }).subscribe({
+                    next: ({ value }) => {
+                        const msg = value.data.onCreateMessage;
+                        if (msg.channel !== state.currentChannel) return;
 
-                try {
-                    state.subscription = API.graphql({
-                        query: QUERIES.subscribe,
-                        variables: { filter: { channel: { eq: channelId } } }
-                    }).subscribe({
-                        next: ({ value }) => {
-                            const msg = value.data.onCreateMessage;
-                            if (msg.channel === state.currentChannel) {
-                                // Process for CMDs first
-                                const visible = processMessages([msg], false); // isHistory=false
-
-                                if (visible.length > 0) {
-                                    const m = visible[0];
-                                    const msgs = state.messages[state.currentChannel] || [];
-                                    if (!msgs.some(existing => existing.id === m.id)) {
-                                        msgs.push(m);
-                                        state.messages[state.currentChannel] = msgs;
-                                        setCache('jce_messages_' + state.currentChannel, msgs.slice(-50));
-                                        renderMessages();
-                                    }
-                                } else {
-                                    // It was a CMD, need to re-render if it was reaction
-                                    // Typing has its own render
-                                    if (msg.content.includes('::REACT::')) renderMessages();
-                                }
+                        // Handle CMD
+                        if (msg.content.startsWith(CMD_PREFIX)) {
+                            // Helper to apply CMD logic
+                            applyControlMessage(msg);
+                        } else {
+                            if (!state.messages[channel]) state.messages[channel] = [];
+                            // Deduplicate
+                            if (!state.messages[channel].some(m => m.id === msg.id)) {
+                                state.messages[channel].push(msg);
+                                renderMessages();
                             }
-                        },
-                        error: (e) => {
-                            console.error('Subscription error:', e);
                         }
-                    });
-                } catch (e) {
-                    console.error('Subscribe failed:', e);
+                    },
+                    error: (e) => console.error("Sub error", e)
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        // --- CONTROL MESSAGES (Core of Edit/Delete/React) ---
+        function applyControlMessage(cmdMsg) {
+            const parts = cmdMsg.content.split('::');
+            const cmd = parts[1];
+            const msgs = state.messages[state.currentChannel] || [];
+
+            if (cmd === 'DELETE') { // CMD::DELETE::msgId
+                const targetId = parts[2];
+                const msg = msgs.find(m => m.id === targetId);
+                if (msg) {
+                    msg.deleted = true;
+                    renderMessages();
                 }
             }
-
-            // --- UI FUNCTIONS ---
-
-            function generateStars() {
-                const count = window.innerWidth < 768 ? 40 : 80;
-                for (let i = 0; i < count; i++) {
-                    const star = document.createElement('div');
-                    star.className = 'star';
-                    star.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;width:${Math.random() * 3 + 1}px;height:${Math.random() * 3 + 1}px;--duration:${Math.random() * 3 + 2}s;--delay:${Math.random() * 5}s;`;
-                    els.starsContainer.appendChild(star);
+            else if (cmd === 'EDIT') { // CMD::EDIT::msgId::newContent
+                const targetId = parts[2];
+                const newContent = parts.slice(3).join('::');
+                const msg = msgs.find(m => m.id === targetId);
+                if (msg) {
+                    msg.content = newContent;
+                    msg.isEdited = true;
+                    renderMessages();
                 }
             }
-
-            function renderChannels() {
-                els.channelsList.innerHTML = CHANNELS.map(ch =>
-                    `<button class="channel-btn ${ch.id === state.currentChannel ? 'active' : ''}" data-channel="${ch.id}"><span>${ch.icon}</span> ${ch.name}</button>`
-                ).join('');
-            }
-
-            function renderTyping() {
-                const el = $('typing-indicator');
-                const users = Object.values(state.typingUsers);
-                if (users.length === 0) {
-                    el.classList.remove('active');
-                    setTimeout(() => el.textContent = '', 300);
-                    return;
-                }
-                const names = users.map(u => u.name.split(' ')[0]);
-                const text = names.length > 3 ? `${names.length} people are typing...` :
-                    names.join(', ') + (names.length === 1 ? ' is ' : ' are ') + 'typing...';
-
-                el.textContent = text;
-                el.classList.add('active');
-            }
-
-            // Expose toggleReaction to window for onclick handlers
-            window.toggleReaction = function (msgId, emoji) {
-                if (!state.user) return;
-                // Optimistic update? No, let's wait for subscription or just fire and forget.
-                // Actually, for better UX, we should update local state Immediately.
-                // logic: toggle
+            else if (cmd === 'REACT') { // CMD::REACT::msgId::emoji::user
+                const [_, __, msgId, emoji, userId] = parts;
                 if (!state.reactions[msgId]) state.reactions[msgId] = {};
                 if (!state.reactions[msgId][emoji]) state.reactions[msgId][emoji] = [];
-
-                const idx = state.reactions[msgId][emoji].indexOf(state.user.email); // Use email as ID
-                if (idx > -1) {
-                    state.reactions[msgId][emoji].splice(idx, 1);
-                } else {
-                    state.reactions[msgId][emoji].push(state.user.email);
+                if (!state.reactions[msgId][emoji].includes(userId)) {
+                    state.reactions[msgId][emoji].push(userId);
+                    renderMessages();
                 }
-                renderMessages();
-
-                sendControlMessage('REACT', msgId, emoji, state.user.email);
-            };
-
-            function showModal({ title, body, actionText, onAction, onCancel, showCancel = true }) {
-                els.modalContainer.innerHTML = `
-                    <div class="modal-overlay active">
-                        <div class="modal-content">
-                            <div class="modal-title">${title}</div>
-                            <div class="modal-body">${body}</div>
-                            <div class="modal-actions">
-                                ${showCancel ? `<button class="modal-btn secondary" id="modal-cancel">Cancel</button>` : ''}
-                                <button class="modal-btn primary" id="modal-action">${actionText || 'OK'}</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                const overlay = els.modalContainer.querySelector('.modal-overlay');
-                const cancelBtn = els.modalContainer.querySelector('#modal-cancel');
-                const actionBtn = els.modalContainer.querySelector('#modal-action');
-
-                function close() {
-                    overlay.classList.remove('active');
-                    setTimeout(() => els.modalContainer.innerHTML = '', 300);
+            }
+            else if (cmd === 'UNREACT') {
+                const [_, __, msgId, emoji, userId] = parts;
+                if (state.reactions[msgId] && state.reactions[msgId][emoji]) {
+                    const idx = state.reactions[msgId][emoji].indexOf(userId);
+                    if (idx > -1) {
+                        state.reactions[msgId][emoji].splice(idx, 1);
+                        renderMessages();
+                    }
                 }
+            }
+            else if (cmd === 'TYPING') { // CMD::TYPING::userId::name
+                // Typing is ephemeral, doesn't persist
+                const [_, __, userId, name] = parts;
+                if (state.user && userId !== state.user.id) handleTyping(userId, name);
+            }
+        }
 
-                if (cancelBtn) cancelBtn.onclick = () => { close(); if (onCancel) onCancel(); };
-                actionBtn.onclick = () => {
-                    if (onAction) {
-                        if (onAction() !== false) close();
-                    } else close();
-                };
+        function processMessages(messages, isHistory = false) {
+            // Processing history involves running control messages against the list
+            // First, separate content vs CMDs
+            if (!isHistory) return;
+
+            // Sort so we process in order
+            const sorted = [...messages].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            // We need to keep a running list of "real" messages and apply cmds to them
+            // But since we are modifying state.messages in place usually, we just iterate
+
+            // Clear current reactions if reloading history to avoid dupes
+            // state.reactions = {}; // Actually we might want to preserve? No, rebuilt from history.
+
+            sorted.forEach(msg => {
+                if (msg.content.startsWith(CMD_PREFIX)) {
+                    applyControlMessage(msg);
+                }
+                // Regular messages are already in state.messages if we passed them in
+            });
+            renderMessages();
+        }
+
+        async function sendControlMessage(type, ...args) {
+            if (!state.user) return;
+            const content = CMD_PREFIX + type + "::" + args.join("::");
+            try {
+                // We create a message record for the CMD (it acts as the signal)
+                await window.aws_amplify.API.graphql({
+                    query: QUERIES.create,
+                    variables: {
+                        input: {
+                            id: uuid(),
+                            channel: state.currentChannel,
+                            content: content,
+                            email: state.user.email,
+                            name: state.user.name,
+                            dept: state.user.dept || 'Student',
+                            year: state.user.year || 'I',
+                            timestamp: Date.now(),
+                            createdAt: new Date().toISOString()
+                        }
+                    },
+                    authMode: 'AMAZON_COGNITO_USER_POOLS'
+                });
+            } catch (e) { console.error("CMD failed", e); }
+        }
+
+        function handleTyping(userId, name) {
+            const now = Date.now();
+            state.typingUsers[userId] = { name, time: now };
+            renderTyping();
+
+            // Clear after 3s
+            setTimeout(() => {
+                if (state.typingUsers[userId] && state.typingUsers[userId].time === now) {
+                    delete state.typingUsers[userId];
+                    renderTyping();
+                }
+            }, 3000);
+        }
+
+        function renderTyping() {
+            const users = Object.values(state.typingUsers).map(u => u.name);
+            const el = $('typing-indicator');
+            if (users.length > 0) {
+                el.textContent = `${users.join(', ')} is typing...`;
+                el.classList.add('active');
+            } else {
+                el.classList.remove('active');
+            }
+        }
+
+        // --- UI RENDERING ---
+        function formatMessage(content) {
+            // Simple linkify
+            return content.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+        }
+
+        function renderMessages() {
+            const container = $('messages-container');
+            const msgs = state.messages[state.currentChannel] || [];
+
+            // FILTER DELETED MESSAGES
+            const visibleMsgs = msgs.filter(m => !m.content.startsWith(CMD_PREFIX) && !m.deleted);
+
+            if (visibleMsgs.length === 0) {
+                container.innerHTML = '<div class="status-message">No messages yet. Start the conversation!</div>';
+                return;
             }
 
-            window.editMessage = function (msgId) {
-                if (!state.user) return;
-                const msgs = state.messages[state.currentChannel];
-                const msg = msgs.find(m => m.id === msgId);
-                if (!msg) return;
+            container.innerHTML = visibleMsgs.map(msg => {
+                const isOwn = state.user && (msg.email === state.user.email);
+                const time = new Date(msg.createdAt || msg.timestamp);
+                const timeStr = !isNaN(time) ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
-                showModal({
-                    title: 'Edit Message',
-                    body: `<textarea id="edit-input" class="modal-input" rows="3">${msg.content}</textarea>`,
-                    actionText: 'Save',
-                    onAction: () => {
-                        const newContent = document.getElementById('edit-input').value;
-                        if (newContent !== null && newContent.trim() !== "" && newContent !== msg.content) {
-                            if (containsBadWords(newContent)) {
-                                showModal({ title: 'Language Warning 🚫', body: 'Please keep the language clean!', showCancel: false });
-                                return false; // Don't close edit modal
-                            }
-                            msg.content = newContent;
-                            msg.isEdited = true;
-                            renderMessages();
-                            sendControlMessage('EDIT', msgId, newContent);
-                        }
-                    }
-                });
-            };
+                // Reactions
+                const r = state.reactions[msg.id] || {};
+                const reactionsHtml = Object.entries(r).map(([emoji, users]) => {
+                    if (!users.length) return '';
+                    const isActive = state.user && users.includes(state.user.email);
+                    return `<button class="reaction-chip ${isActive ? 'active' : ''}" onclick="toggleReaction('${msg.id}','${emoji}')">${emoji} ${users.length}</button>`;
+                }).join('');
 
-            window.deleteMessage = function (msgId) {
-                if (!state.user) return;
-                showModal({
-                    title: 'Delete Message?',
-                    body: 'Are you sure you want to delete this message? This cannot be undone.',
-                    actionText: 'Delete 🗑️',
-                    onAction: () => {
-                        // Optimistic delete
-                        const msgs = state.messages[state.currentChannel];
-                        if (msgs) {
-                            const mIndex = msgs.findIndex(m => m.id === msgId);
-                            if (mIndex > -1) {
-                                msgs[mIndex].deleted = true;
-                                renderMessages();
-                                sendControlMessage('DELETE', msgId);
-                            }
-                        }
-                    }
-                });
-            };
+                // Edit/Delete Permissions (10 min edit, anytime delete)
+                const canEdit = isOwn && (Date.now() - time.getTime() < 10 * 60 * 1000);
+                const editBtn = canEdit ? `<button class="msg-action-btn" onclick="openEditModal('${msg.id}')">✎</button>` : '';
+                const deleteBtn = isOwn ? `<button class="msg-action-btn" onclick="openDeleteModal('${msg.id}')">🗑️</button>` : '';
 
-            function renderMessages() {
-                const msgs = state.messages[state.currentChannel] || [];
-                if (!msgs.length) {
-                    els.messagesContainer.innerHTML = '<div class="status-message">No messages yet. Start the conversation!</div>';
-                    return;
-                }
-                els.messagesContainer.innerHTML = msgs.map(msg => {
-                    const isOwn = msg.email === state.user?.email || msg.userId === state.user?.id;
-                    const statusClass = msg.pending ? 'pending' : (msg.failed ? 'failed' : '');
-                    const time = msg.createdAt ? new Date(msg.createdAt) : new Date(msg.timestamp);
-                    const timeStr = !isNaN(time) ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-
-                    // Reactions
-                    const msgReactions = state.reactions[msg.id] || {};
-                    const reactionsHtml = Object.entries(msgReactions).map(([emoji, users]) => {
-                        if (users.length === 0) return '';
-                        const isActive = users.includes(state.user.email);
-                        return `<button class="reaction-chip ${isActive ? 'active' : ''}" onclick="window.toggleReaction('${msg.id}','${emoji}')" title="${users.join(', ')}">${emoji} ${users.length}</button>`;
-                    }).join('');
-
-                    // Edit Button (10 min limit)
-                    const canEdit = isOwn && (Date.now() - time.getTime() < 10 * 60 * 1000);
-                    const editBtn = canEdit ? `<button onclick="window.editMessage('${msg.id}')" style="background:none; border:none; color:var(--text-light); cursor:pointer; margin-left:5px;" title="Edit">✎</button>` : '';
-
-                    // Delete Button (Always available for own messages)
-                    const deleteBtn = isOwn ? `<button onclick="window.deleteMessage('${msg.id}')" style="background:none; border:none; color:var(--text-light); cursor:pointer; margin-left:5px;" title="Delete">🗑️</button>` : '';
-
-                    return `<div class="message ${isOwn ? 'own' : 'other'} ${statusClass}">
-                    ${!isOwn ? `<div class="sender-name">${msg.name || 'User'} <small style="opacity:0.7">(${msg.dept} - ${msg.year})</small></div>` : ''}
+                return `
+                <div class="message ${isOwn ? 'own' : 'other'}">
+                    ${!isOwn ? `<div class="sender-name">${msg.name} <small>(${msg.dept})</small></div>` : ''}
                     <div class="message-bubble">
-                        ${formatMessage(msg.content)} ${msg.isEdited ? '<small style="opacity:0.5; font-size:0.6em;">(edited)</small>' : ''}
+                        ${formatMessage(msg.content)}
+                        ${msg.isEdited ? '<small style="opacity:0.5; font-size:0.6em; margin-left:4px;">(edited)</small>' : ''}
                         <div class="reactions-list">${reactionsHtml}</div>
                     </div>
                     <div class="message-actions">
                         ${editBtn}
                         ${deleteBtn}
-                        <button class="reaction-btn" onclick="window.toggleReaction('${msg.id}', '❤️')">❤️</button>
-                        <button class="reaction-btn" onclick="window.toggleReaction('${msg.id}', '👍')">👍</button>
-                        <button class="reaction-btn" onclick="window.toggleReaction('${msg.id}', '😂')">😂</button>
-                        <button class="reaction-btn" onclick="window.toggleReaction('${msg.id}', '😮')">😮</button>
+                        <button class="reaction-btn" onclick="toggleReaction('${msg.id}', '❤️')">❤️</button>
+                        <button class="reaction-btn" onclick="toggleReaction('${msg.id}', '👍')">👍</button>
+                        <button class="reaction-btn" onclick="toggleReaction('${msg.id}', '😂')">😂</button>
                     </div>
-                    <div class="message-meta"><span>${timeStr}</span></div>
+                    <div class="message-meta">${timeStr}</div>
                 </div>`;
-                }).join('');
-                els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
+            }).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // --- ACTIONS ---
+        async function sendMessage() {
+            const input = $('message-input');
+            const content = input.value.trim();
+            if (!content || !state.user) return;
+
+            if (containsBadWords(content)) {
+                showModal({ title: 'Language Warning 🚫', body: 'Please keep the language clean!', showCancel: false });
+                return;
             }
 
-            async function loadChannel(channelId) {
-                state.currentChannel = channelId;
-                const ch = CHANNELS.find(c => c.id === channelId);
-                els.currentChannelName.textContent = `${ch.icon} ${ch.name}`;
-                renderChannels();
+            const msg = {
+                id: uuid(),
+                channel: state.currentChannel,
+                content,
+                email: state.user.email,
+                name: state.user.name,
+                dept: state.user.dept,
+                year: state.user.year,
+                timestamp: Date.now(),
+                createdAt: new Date().toISOString(),
+                pending: true
+            };
 
-                const cached = getCache('jce_messages_' + channelId);
-                if (cached) {
-                    state.messages[channelId] = cached;
-                    renderMessages();
-                } else {
-                    els.messagesContainer.innerHTML = '<div class="status-message">Loading messages...</div>';
-                }
+            // Optimistic
+            if (!state.messages[state.currentChannel]) state.messages[state.currentChannel] = [];
+            state.messages[state.currentChannel].push(msg);
+            renderMessages();
+            input.value = '';
 
-                if (state.amplifyReady) {
-                    try {
-                        state.reactions = {}; // Reset reactions on reload
-                        const rawMsgs = await fetchMessages(channelId);
-                        const msgs = processMessages(rawMsgs, true); // isHistory=true
-                        state.messages[channelId] = msgs;
-                        setCache('jce_messages_' + channelId, msgs.slice(-50));
-                        renderMessages();
-                        setConnectionStatus('online');
-                        subscribeToChannel(channelId);
-                    } catch (e) {
-                        console.error('Fetch error:', e);
-                        setConnectionStatus('offline');
-                        if (!cached) els.messagesContainer.innerHTML = '<div class="status-message error">Failed to load messages.</div>';
-                    }
-                }
-            }
-
-            async function sendMessage() {
-                const content = els.messageInput.value.trim();
-                if (!content || !state.user) return;
-
-                if (containsBadWords(content)) {
-                    showModal({ title: 'Language Warning 🚫', body: 'Please keep the language clean!', showCancel: false });
-                    return;
-                }
-
-                const now = Date.now();
-                const msg = {
-                    id: uuid(),
-                    channel: state.currentChannel,
-                    content,
-                    email: state.user.email,
-                    name: state.user.name,
-                    dept: state.user.dept || 'Student',
-                    year: state.user.year || 'I',
-                    timestamp: now,
-                    createdAt: new Date().toISOString(),
-                    pending: true
-                };
-
-                if (!state.messages[state.currentChannel]) state.messages[state.currentChannel] = [];
-                state.messages[state.currentChannel].push(msg);
+            try {
+                const { pending, ...cleanMsg } = msg;
+                await window.aws_amplify.API.graphql({
+                    query: QUERIES.create,
+                    variables: { input: cleanMsg },
+                    authMode: 'AMAZON_COGNITO_USER_POOLS'
+                });
+                msg.pending = false;
+                // Don't re-render, subscription comes in briefly
+            } catch (e) {
+                console.error(e);
+                msg.failed = true;
                 renderMessages();
-                els.messageInput.value = '';
-                els.messageInput.style.height = 'auto';
+            }
+        }
 
-                if (state.amplifyReady) {
-                    try {
-                        const { pending, failed, createdAt, ...cleanMsg } = msg;
-                        await createMessage(cleanMsg);
-                        msg.pending = false;
-                        setCache('jce_messages_' + state.currentChannel, state.messages[state.currentChannel].slice(-50));
+        function toggleReaction(msgId, emoji) {
+            if (!state.user) return;
+            const r = state.reactions[msgId] || {};
+            const users = r[emoji] || [];
+
+            if (users.includes(state.user.email)) {
+                // Optimistic Unreact
+                const idx = users.indexOf(state.user.email);
+                users.splice(idx, 1);
+                sendControlMessage('UNREACT', msgId, emoji, state.user.email);
+            } else {
+                // Optimistic React
+                if (!state.reactions[msgId]) state.reactions[msgId] = {};
+                if (!state.reactions[msgId][emoji]) state.reactions[msgId][emoji] = [];
+                state.reactions[msgId][emoji].push(state.user.email);
+                sendControlMessage('REACT', msgId, emoji, state.user.email);
+            }
+            renderMessages();
+        }
+
+        window.openEditModal = function (msgId) {
+            const msgs = state.messages[state.currentChannel];
+            const msg = msgs.find(m => m.id === msgId);
+            if (!msg) return;
+
+            showModal({
+                title: 'Edit Message ✎',
+                body: `<textarea id="edit-text" class="modal-input" rows="3">${msg.content}</textarea>`,
+                actionText: 'Save',
+                onAction: () => {
+                    const newText = $('edit-text').value;
+                    if (newText && newText !== msg.content) {
+                        if (containsBadWords(newText)) {
+                            showModal({ title: 'Warning', body: 'No bad words please.', showCancel: false });
+                            return false;
+                        }
+                        // Optimistic
+                        msg.content = newText;
+                        msg.isEdited = true;
                         renderMessages();
-                    } catch (e) {
-                        console.error('Send error:', e);
-                        msg.pending = false;
-                        msg.failed = true;
-                        renderMessages();
+                        sendControlMessage('EDIT', msgId, newText);
                     }
                 }
-            }
+            });
+        };
 
-            function showChat() {
-                const name = state.user.name || 'User';
-                const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
-                $('user-avatar').textContent = initials;
-                $('user-name-display').textContent = name;
-                $('user-dept-display').textContent = `${state.user.dept} - ${state.user.year} Year`;
-
-                els.loginView.style.opacity = '0';
-                els.loginView.style.transform = 'translateY(20px)';
-
-                setTimeout(() => {
-                    els.loginView.style.display = 'none';
-                    els.chatView.classList.add('active');
-                    if (state.amplifyReady) loadChannel(state.currentChannel);
-                }, 500);
-            }
-
-            async function logout() {
-                try { if (Auth) await Auth.signOut(); } catch (e) { }
-                if (state.subscription) state.subscription.unsubscribe();
-                location.reload();
-            }
-
-            function setupEvents() {
-                els.sendBtn.addEventListener('click', sendMessage);
-                els.messageInput.addEventListener('keypress', e => {
-                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-                });
-                let typingTimer = null;
-                els.messageInput.addEventListener('input', function () {
-                    this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px';
-
-                    // Throttle typing events
-                    if (!typingTimer) {
-                        sendControlMessage('TYPING', state.user.id, state.user.name);
-                        typingTimer = setTimeout(() => { typingTimer = null; }, 2000);
+        window.openDeleteModal = function (msgId) {
+            showModal({
+                title: 'Delete Message?',
+                body: 'Are you sure? This message will be removed for everyone.',
+                actionText: 'Delete 🗑️',
+                onAction: () => {
+                    // Optimistic
+                    const msgs = state.messages[state.currentChannel];
+                    const msg = msgs.find(m => m.id === msgId);
+                    if (msg) {
+                        msg.deleted = true;
+                        renderMessages();
+                        sendControlMessage('DELETE', msgId);
                     }
-                });
-                els.channelsList.addEventListener('click', e => {
-                    const btn = e.target.closest('.channel-btn');
-                    if (btn) loadChannel(btn.dataset.channel);
-                });
-                els.logoutBtn.addEventListener('click', logout);
+                }
+            });
+        };
+
+        // --- MODAL SYSTEM ---
+        function showModal({ title, body, actionText, onAction, onCancel, showCancel = true }) {
+            const container = $('modal-container');
+            container.innerHTML = `
+                <div class="modal-overlay active">
+                    <div class="modal-content">
+                        <div class="modal-title">${title}</div>
+                        <div class="modal-body">${body}</div>
+                        <div class="modal-actions">
+                            ${showCancel ? `<button class="modal-btn secondary" onclick="closeModal()">Cancel</button>` : ''}
+                            <button class="modal-btn primary" id="modal-confirm-btn">${actionText || 'OK'}</button>
+                        </div>
+                    </div>
+                </div>`;
+
+            $('modal-confirm-btn').onclick = () => {
+                if (onAction) {
+                    const res = onAction();
+                    if (res !== false) closeModal();
+                } else closeModal();
+            };
+        }
+        window.closeModal = function () {
+            const overlay = document.querySelector('.modal-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => $('modal-container').innerHTML = '', 300);
             }
+        };
 
-            function init() {
-                els.loginView = $('login-view');
-                els.chatView = $('chat-view');
-                els.channelsList = $('channels-list');
-                els.messagesContainer = $('messages-container');
-                els.messageInput = $('message-input');
-                els.sendBtn = $('send-btn');
-                els.currentChannelName = $('current-channel-name');
-                els.starsContainer = $('stars-container');
-                els.connectionStatus = $('connection-status');
-                els.logoutBtn = $('logout-btn');
-                els.modalContainer = $('modal-container');
-                els.menuToggle = $('menu-toggle');
-                els.sidebar = document.querySelector('.sidebar');
-                els.mobileOverlay = $('mobile-overlay');
+        // --- CACHE ---
+        function setCache(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
+        function getCache(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
 
-                generateStars();
-                renderChannels();
-                setupEvents();
+        // --- EVENTS ---
+        function setupEvents() {
+            $('login-btn').onclick = signIn;
+            $('signup-btn').onclick = signUp;
+            $('verify-btn').onclick = verify;
+            $('logout-btn').onclick = logout;
+            $('show-signup').onclick = () => { $('login-form').style.display = 'none'; $('signup-form').style.display = 'block'; };
+            $('show-login').onclick = () => { $('signup-form').style.display = 'none'; $('login-form').style.display = 'block'; };
 
-                // Mobile Menu Events
-                els.menuToggle.addEventListener('click', () => {
-                    els.sidebar.classList.add('active');
-                });
-                els.mobileOverlay.addEventListener('click', () => {
-                    els.sidebar.classList.remove('active');
-                });
-                // Close sidebar on channel select (mobile)
-                els.channelsList.addEventListener('click', (e) => {
-                    if (window.innerWidth <= 768 && e.target.closest('.channel-btn')) {
-                        els.sidebar.classList.remove('active');
-                    }
-                });
+            $('send-btn').onclick = sendMessage;
+            $('message-input').onkeypress = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
 
-                initAmplify();
-            }
+            $('menu-toggle').onclick = () => $('chat-view').querySelector('.sidebar').classList.add('active');
+            $('mobile-overlay').onclick = () => $('chat-view').querySelector('.sidebar').classList.remove('active');
 
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
-        })();
+            // Typing
+            $('message-input').oninput = () => {
+                if (!typingTimer && state.user) {
+                    sendControlMessage('TYPING', state.user.id, state.user.name);
+                    typingTimer = setTimeout(() => typingTimer = null, 2000);
+                }
+            };
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            els.sidebar = document.querySelector('.sidebar');
+            els.channelsList = $('channels-list');
+
+            generateStars();
+            setupEvents();
+            initAmplify();
+        });
+
     </script>
 </body>
 
