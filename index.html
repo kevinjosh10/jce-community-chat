@@ -905,6 +905,7 @@
         const QUERIES = {
             list: `query ListMessages($filter: ModelMessageFilterInput, $limit: Int) { listMessages(filter: $filter, limit: $limit) { items { id channel content email name dept year timestamp createdAt } } }`,
             create: `mutation CreateMessage($input: CreateMessageInput!) { createMessage(input: $input) { id channel content email name dept year timestamp createdAt } }`,
+            delete: `mutation DeleteMessage($input: DeleteMessageInput!) { deleteMessage(input: $input) { id } }`,
             subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channel content email name dept year timestamp createdAt } }`
         };
         const CHANNELS = ['General', 'CSE', 'ECE', 'EEE', 'MECH', 'IT', 'AI & DS', 'Announcements'];
@@ -1399,14 +1400,24 @@
                 title: 'Delete Message?',
                 body: 'Are you sure? This message will be removed for everyone.',
                 actionText: 'Delete 🗑️',
-                onAction: () => {
+                onAction: async () => {
                     // Optimistic
                     const msgs = state.messages[state.currentChannel];
                     const msg = msgs.find(m => m.id === msgId);
                     if (msg) {
                         msg.deleted = true;
                         renderMessages();
+                        // 1. Send Real-time signal (Legacy/Immediate)
                         sendControlMessage('DELETE', msgId);
+
+                        // 2. Perform Physical DB Delete
+                        try {
+                            await window.aws_amplify.API.graphql({
+                                query: QUERIES.delete,
+                                variables: { input: { id: msgId } },
+                                authMode: 'AMAZON_COGNITO_USER_POOLS'
+                            });
+                        } catch (e) { console.error("Cloud delete failed", e); }
                     }
                 }
             });
