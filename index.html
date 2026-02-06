@@ -14,7 +14,6 @@
         :root {
             --bg-dark: #000000;
             --bg-darker: #000000;
-            /* Pure Black as requested */
             --primary: #a855f7;
             --primary-light: #e879f9;
             --glass: rgba(0, 0, 0, 0.85);
@@ -41,7 +40,7 @@
             position: relative;
         }
 
-        /* --- Scrollbar Styling (Purple & Black) --- */
+        /* --- Scrollbar Styling --- */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -82,17 +81,8 @@
         }
 
         @keyframes twinkle {
-
-            0%,
-            100% {
-                opacity: 0.2;
-                transform: scale(0.8);
-            }
-
-            50% {
-                opacity: 1;
-                transform: scale(1.2);
-            }
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
         }
 
         .layer {
@@ -103,7 +93,6 @@
             height: 200%;
             animation: drift linear infinite;
             opacity: 0.3;
-            /* Adjusted opacity for black bg */
         }
 
         .layer-1 {
@@ -125,13 +114,8 @@
         }
 
         @keyframes drift {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* --- Login Components --- */
@@ -423,15 +407,8 @@
         }
 
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message-bubble {
@@ -559,7 +536,6 @@
         /* Input Area */
         .input-area {
             padding: 1.5rem 1.5rem 0.5rem 1.5rem;
-            /* Reduced bottom space */
             border-top: 1px solid #333;
             background: var(--bg-darker);
             display: flex;
@@ -695,11 +671,7 @@
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
-
-            body,
-            .sidebar,
-            .main-chat,
-            .chat-header {
+            body, .sidebar, .main-chat, .chat-header {
                 background: #000000 !important;
             }
 
@@ -744,9 +716,7 @@
                 display: block;
             }
 
-            /* Ensure buttons are large enough */
-            .msg-action-btn,
-            .reaction-btn {
+            .msg-action-btn, .reaction-btn {
                 padding: 8px;
                 font-size: 1.2rem;
             }
@@ -784,7 +754,7 @@
                 </div>
                 <button class="btn-primary" id="login-btn">Sign In</button>
                 <p style="text-align: center; margin-top: 1rem; color: var(--text-light); cursor: pointer;"
-                    id="show-signup">New here? Creates Account</p>
+                    id="show-signup">New here? Create Account</p>
             </div>
 
             <div id="signup-form" style="display: none;">
@@ -853,7 +823,7 @@
                         <p id="user-details">Student</p>
                     </div>
                 </div>
-                <button class="logout-btn" id="logout-btn" style="margin-top: 1rem; width: 100%;">Logout</button>
+                <button class="logout-btn" id="logout-btn" style="margin-top: 1rem; width: 100%; padding: 0.5rem; background: #333; border: none; color: white; border-radius: 8px; cursor: pointer;">Logout</button>
             </div>
             <div class="channels-list" id="channels-list"></div>
         </aside>
@@ -918,7 +888,7 @@
             user: null,
             currentChannel: 'General',
             messages: {},
-            subscriptions: [], // CHANGED: Support multiple subs
+            subscriptions: [],
             amplifyReady: false,
             authState: 'signIn',
             pendingUser: null,
@@ -931,11 +901,117 @@
         const $ = id => document.getElementById(id);
         const els = {};
 
-        // ... (skipping generic helpers) ...
+        // --- INITIALIZATION ---
+        function initAmplify() {
+            if (window.aws_amplify) {
+                window.aws_amplify.Amplify.configure(AWS_CONFIG);
+                state.amplifyReady = true;
+                checkUser();
+            } else {
+                setTimeout(initAmplify, 500);
+            }
+        }
 
-        // ... (skipping initializers) ...
+        async function checkUser() {
+            try {
+                const user = await window.aws_amplify.Auth.currentAuthenticatedUser();
+                handleUserLoad(user);
+            } catch (e) {
+                $('login-view').style.display = 'flex';
+                $('chat-view').classList.remove('active');
+            }
+        }
 
-        // ... (skipping auth) ...
+        async function handleUserLoad(authUser) {
+            // Extract attributes
+            const attrs = authUser.attributes || {};
+            state.user = {
+                id: authUser.username,
+                email: attrs.email,
+                name: attrs.name || attrs.email.split('@')[0],
+                dept: attrs['custom:dept'] || 'Student',
+                year: attrs['custom:year'] || ''
+            };
+
+            // Update UI
+            $('user-name').textContent = state.user.name;
+            $('user-details').textContent = `${state.user.dept} ${state.user.year}`;
+            $('user-avatar').textContent = state.user.name.substring(0, 2).toUpperCase();
+
+            // Show Chat
+            $('login-view').style.display = 'none';
+            $('chat-view').classList.add('active');
+            loadChannel(state.currentChannel);
+        }
+
+        // --- AUTH FUNCTIONS ---
+        async function signIn() {
+            const email = $('login-email').value.trim();
+            const pass = $('login-pass').value;
+            if (!email || !pass) return alert("Please enter email and password");
+
+            try {
+                const user = await window.aws_amplify.Auth.signIn(email, pass);
+                handleUserLoad(user);
+            } catch (e) {
+                if (e.code === 'UserNotConfirmedException') {
+                    state.pendingUser = email;
+                    $('login-form').style.display = 'none';
+                    $('verify-form').style.display = 'block';
+                } else {
+                    alert('Login Failed: ' + e.message);
+                }
+            }
+        }
+
+        async function signUp() {
+            const name = $('signup-name').value.trim();
+            const email = $('signup-email').value.trim();
+            const dept = $('signup-dept').value;
+            const year = $('signup-year').value;
+            const pass = $('signup-pass').value;
+
+            if (!email.endsWith('@jerusalemengg.ac.in')) {
+                return alert("Please use your JCE email (@jerusalemengg.ac.in)");
+            }
+            if (!name || !pass || !dept || !year) return alert("All fields are required");
+
+            try {
+                await window.aws_amplify.Auth.signUp({
+                    username: email,
+                    password: pass,
+                    attributes: {
+                        email,
+                        name,
+                        'custom:dept': dept,
+                        'custom:year': year
+                    }
+                });
+                state.pendingUser = email;
+                $('signup-form').style.display = 'none';
+                $('verify-form').style.display = 'block';
+            } catch (e) {
+                alert('Signup Failed: ' + e.message);
+            }
+        }
+
+        async function verify() {
+            const code = $('verify-code').value.trim();
+            if (!code) return alert("Enter code");
+            try {
+                await window.aws_amplify.Auth.confirmSignUp(state.pendingUser, code);
+                alert("Verified! Please sign in.");
+                $('verify-form').style.display = 'none';
+                $('login-form').style.display = 'block';
+            } catch (e) {
+                alert('Verification Failed: ' + e.message);
+            }
+        }
+
+        async function logout() {
+            await window.aws_amplify.Auth.signOut();
+            window.location.reload();
+        }
 
         // --- MESSAGING LOGIC ---
         function uuid() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => (c === 'x' ? Math.random() * 16 | 0 : (Math.random() * 16 | 0 & 0x3 | 0x8)).toString(16)); }
@@ -951,6 +1027,11 @@
                      <span>#</span> ${c}
                  </button>`
             ).join('');
+            
+            // Re-attach listeners
+            document.querySelectorAll('.channel-btn').forEach(btn => {
+                btn.onclick = () => loadChannel(btn.dataset.channel);
+            });
         }
 
         async function loadChannel(channel) {
@@ -965,7 +1046,6 @@
             // Unsubscribe ALL
             state.subscriptions.forEach(sub => sub.unsubscribe());
             state.subscriptions = [];
-            if (state.subscription) { state.subscription.unsubscribe(); state.subscription = null; } // Legacy cleanup
 
             // Load Cache
             const cache = getCache('jce_messages_' + channel);
@@ -982,7 +1062,7 @@
                 const res = await window.aws_amplify.API.graphql({
                     query: QUERIES.list,
                     variables: { filter, limit: 100 },
-                    authMode: 'AMAZON_COGNITO_USER_POOLS' // FIXED TYPO
+                    authMode: 'AMAZON_COGNITO_USER_POOLS'
                 });
                 const items = res.data.listMessages.items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                 state.messages[channel] = items;
@@ -1095,23 +1175,12 @@
         }
 
         function processMessages(messages, isHistory = false) {
-            // Processing history involves running control messages against the list
-            // First, separate content vs CMDs
             if (!isHistory) return;
-
-            // Sort so we process in order
             const sorted = [...messages].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            // We need to keep a running list of "real" messages and apply cmds to them
-            // But since we are modifying state.messages in place usually, we just iterate
-
-            // Clear current reactions if reloading history to avoid dupes
-            // state.reactions = {}; // Actually we might want to preserve? No, rebuilt from history.
-
             sorted.forEach(msg => {
                 if (msg.content.startsWith(CMD_PREFIX)) {
                     applyControlMessage(msg);
                 }
-                // Regular messages are already in state.messages if we passed them in
             });
             renderMessages();
         }
@@ -1120,7 +1189,6 @@
             if (!state.user) return;
             const content = CMD_PREFIX + type + "::" + args.join("::");
             try {
-                // We create a message record for the CMD (it acts as the signal)
                 await window.aws_amplify.API.graphql({
                     query: QUERIES.create,
                     variables: {
@@ -1145,8 +1213,6 @@
             const now = Date.now();
             state.typingUsers[userId] = { name, time: now };
             renderTyping();
-
-            // Clear after 3s
             setTimeout(() => {
                 if (state.typingUsers[userId] && state.typingUsers[userId].time === now) {
                     delete state.typingUsers[userId];
@@ -1168,19 +1234,16 @@
 
         // --- UI RENDERING ---
         function formatMessage(content) {
-            // Simple linkify
             return content.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
         }
 
         function renderMessages() {
             const container = $('messages-container');
             const msgs = state.messages[state.currentChannel] || [];
-
-            // FILTER DELETED MESSAGES
             const visibleMsgs = msgs.filter(m => !m.content.startsWith(CMD_PREFIX) && !m.deleted);
 
             if (visibleMsgs.length === 0) {
-                container.innerHTML = '<div class="status-message">No messages yet. Start the conversation!</div>';
+                container.innerHTML = '<div style="text-align:center; padding:2rem; color:#666;">No messages yet. Start the conversation!</div>';
                 return;
             }
 
@@ -1189,7 +1252,6 @@
                 const time = new Date(msg.createdAt || msg.timestamp);
                 const timeStr = !isNaN(time) ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
-                // Reactions
                 const r = state.reactions[msg.id] || {};
                 const reactionsHtml = Object.entries(r).map(([emoji, users]) => {
                     if (!users.length) return '';
@@ -1197,7 +1259,6 @@
                     return `<button class="reaction-chip ${isActive ? 'active' : ''}" onclick="toggleReaction('${msg.id}','${emoji}')">${emoji} ${users.length}</button>`;
                 }).join('');
 
-                // Edit/Delete Permissions (10 min edit, anytime delete)
                 const canEdit = isOwn && (Date.now() - time.getTime() < 10 * 60 * 1000);
                 const editBtn = canEdit ? `<button class="msg-action-btn" onclick="openEditModal('${msg.id}')">✎</button>` : '';
                 const deleteBtn = isOwn ? `<button class="msg-action-btn" onclick="openDeleteModal('${msg.id}')">🗑️</button>` : '';
@@ -1252,7 +1313,7 @@
             if (!state.messages[state.currentChannel]) state.messages[state.currentChannel] = [];
             state.messages[state.currentChannel].push(msg);
             renderMessages();
-            setCache('jce_messages_' + state.currentChannel, state.messages[state.currentChannel].slice(-50)); // UPDATE CACHE 
+            setCache('jce_messages_' + state.currentChannel, state.messages[state.currentChannel].slice(-50));
             input.value = '';
 
             try {
@@ -1262,8 +1323,6 @@
                     variables: { input: cleanMsg },
                     authMode: 'AMAZON_COGNITO_USER_POOLS'
                 });
-                msg.pending = false;
-                // Don't re-render, subscription comes in briefly
             } catch (e) {
                 console.error(e);
                 msg.failed = true;
@@ -1277,12 +1336,10 @@
             const users = r[emoji] || [];
 
             if (users.includes(state.user.email)) {
-                // Optimistic Unreact
                 const idx = users.indexOf(state.user.email);
                 users.splice(idx, 1);
                 sendControlMessage('UNREACT', msgId, emoji, state.user.email);
             } else {
-                // Optimistic React
                 if (!state.reactions[msgId]) state.reactions[msgId] = {};
                 if (!state.reactions[msgId][emoji]) state.reactions[msgId][emoji] = [];
                 state.reactions[msgId][emoji].push(state.user.email);
@@ -1307,7 +1364,6 @@
                             showModal({ title: 'Warning', body: 'No bad words please.', showCancel: false });
                             return false;
                         }
-                        // Optimistic
                         msg.content = newText;
                         msg.isEdited = true;
                         renderMessages();
@@ -1323,16 +1379,16 @@
                 body: 'Are you sure? This message will be removed for everyone.',
                 actionText: 'Delete 🗑️',
                 onAction: async () => {
-                    // Optimistic
                     const msgs = state.messages[state.currentChannel];
                     const msg = msgs.find(m => m.id === msgId);
                     if (msg) {
                         msg.deleted = true;
                         renderMessages();
-                        // 1. Send Real-time signal (Legacy/Immediate)
+                        
+                        // 1. Send Soft Delete Signal (for immediate UI update on other clients)
                         sendControlMessage('DELETE', msgId);
 
-                        // 2. Perform Physical DB Delete
+                        // 2. Perform Hard Delete from Cloud
                         try {
                             await window.aws_amplify.API.graphql({
                                 query: QUERIES.delete,
@@ -1394,13 +1450,30 @@
             $('menu-toggle').onclick = () => $('chat-view').querySelector('.sidebar').classList.add('active');
             $('mobile-overlay').onclick = () => $('chat-view').querySelector('.sidebar').classList.remove('active');
 
-            // Typing
             $('message-input').oninput = () => {
                 if (!typingTimer && state.user) {
                     sendControlMessage('TYPING', state.user.id, state.user.name);
                     typingTimer = setTimeout(() => typingTimer = null, 2000);
                 }
             };
+        }
+
+        // --- VISUALS ---
+        function generateStars() {
+            const container = document.querySelector('.stars-wrapper');
+            if (!container) return;
+            for (let i = 0; i < 80; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+                star.style.setProperty('--delay', `${Math.random() * 5}s`);
+                container.appendChild(star);
+            }
         }
 
         // Init
