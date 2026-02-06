@@ -1069,7 +1069,6 @@
             const cache = getCache('jce_messages_' + channel);
             if (cache) {
                 state.messages[channel] = cache;
-                // Re-process to handle edits/deletes from cache if any
                 processMessages(state.messages[channel], true);
             }
 
@@ -1081,12 +1080,12 @@
                 const res = await window.aws_amplify.API.graphql({
                     query: QUERIES.list,
                     variables: { filter, limit: 100 },
-                    authMode: 'AMAZON_COGNITO_USER_POOLS'
+                    authMode: 'AMAZN_COGNITO_USER_POOLS'
                 });
                 // Sort by createdAt
                 const items = res.data.listMessages.items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                 state.messages[channel] = items;
-                processMessages(items, true); // Process history for CMDs
+                processMessages(items, true); // Process history
                 setCache('jce_messages_' + channel, items.slice(-50));
             } catch (e) { console.error("Fetch error", e); }
 
@@ -1095,18 +1094,18 @@
 
         function subscribeToChannel(channel) {
             try {
+                // Subscribe to ALL messages (filter client-side for reliability)
                 state.subscription = window.aws_amplify.API.graphql({
                     query: QUERIES.subscribe,
-                    variables: { filter: { channel: { eq: channel } } },
                     authMode: 'AMAZON_COGNITO_USER_POOLS'
                 }).subscribe({
                     next: ({ value }) => {
                         const msg = value.data.onCreateMessage;
+                        // Client-side filtering
                         if (msg.channel !== state.currentChannel) return;
 
                         // Handle CMD
                         if (msg.content.startsWith(CMD_PREFIX)) {
-                            // Helper to apply CMD logic
                             applyControlMessage(msg);
                         } else {
                             if (!state.messages[channel]) state.messages[channel] = [];
@@ -1114,6 +1113,8 @@
                             if (!state.messages[channel].some(m => m.id === msg.id)) {
                                 state.messages[channel].push(msg);
                                 renderMessages();
+                                // Update Cache on incoming message
+                                setCache('jce_messages_' + channel, state.messages[channel].slice(-50));
                             }
                         }
                     },
@@ -1127,32 +1128,26 @@
             const parts = cmdMsg.content.split('::');
             const cmd = parts[1];
             const msgs = state.messages[state.currentChannel] || [];
+            let updated = false;
 
-            if (cmd === 'DELETE') { // CMD::DELETE::msgId
+            if (cmd === 'DELETE') {
                 const targetId = parts[2];
                 const msg = msgs.find(m => m.id === targetId);
-                if (msg) {
-                    msg.deleted = true;
-                    renderMessages();
-                }
+                if (msg) { msg.deleted = true; updated = true; }
             }
-            else if (cmd === 'EDIT') { // CMD::EDIT::msgId::newContent
+            else if (cmd === 'EDIT') {
                 const targetId = parts[2];
                 const newContent = parts.slice(3).join('::');
                 const msg = msgs.find(m => m.id === targetId);
-                if (msg) {
-                    msg.content = newContent;
-                    msg.isEdited = true;
-                    renderMessages();
-                }
+                if (msg) { msg.content = newContent; msg.isEdited = true; updated = true; }
             }
-            else if (cmd === 'REACT') { // CMD::REACT::msgId::emoji::user
+            else if (cmd === 'REACT') {
                 const [_, __, msgId, emoji, userId] = parts;
                 if (!state.reactions[msgId]) state.reactions[msgId] = {};
                 if (!state.reactions[msgId][emoji]) state.reactions[msgId][emoji] = [];
                 if (!state.reactions[msgId][emoji].includes(userId)) {
                     state.reactions[msgId][emoji].push(userId);
-                    renderMessages();
+                    updated = true;
                 }
             }
             else if (cmd === 'UNREACT') {
@@ -1161,14 +1156,18 @@
                     const idx = state.reactions[msgId][emoji].indexOf(userId);
                     if (idx > -1) {
                         state.reactions[msgId][emoji].splice(idx, 1);
-                        renderMessages();
+                        updated = true;
                     }
                 }
             }
-            else if (cmd === 'TYPING') { // CMD::TYPING::userId::name
-                // Typing is ephemeral, doesn't persist
+            else if (cmd === 'TYPING') {
                 const [_, __, userId, name] = parts;
                 if (state.user && userId !== state.user.id) handleTyping(userId, name);
+            }
+
+            if (updated) {
+                renderMessages();
+                setCache('jce_messages_' + state.currentChannel, msgs.slice(-50));
             }
         }
 
@@ -1330,6 +1329,7 @@
             if (!state.messages[state.currentChannel]) state.messages[state.currentChannel] = [];
             state.messages[state.currentChannel].push(msg);
             renderMessages();
+            setCache('jce_messages_' + state.currentChannel, state.messages[state.currentChannel].slice(-50)); // UPDATE CACHE 
             input.value = '';
 
             try {
