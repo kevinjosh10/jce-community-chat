@@ -456,28 +456,7 @@
         }
 
         .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-            font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            font-weight: 600;
-        }
-
-        .connection-status.online {
-            color: var(--success);
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        .connection-status.offline {
-            color: var(--error);
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .connection-status.connecting {
-            color: #f59e0b;
-            background: rgba(245, 158, 11, 0.1);
+            display: none !important;
         }
 
 
@@ -687,43 +666,72 @@
         }
 
         @media (max-width: 768px) {
-            .chat-interface {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 280px;
+                z-index: 40;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                border-right: 1px solid #333;
+                background: var(--bg-darker);
+                padding: 0;
+                display: flex;
                 flex-direction: column;
             }
 
-            .sidebar {
+            .sidebar.active {
+                transform: translateX(0);
+                box-shadow: 20px 0 40px rgba(0, 0, 0, 0.5);
+            }
+
+            .mobile-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
                 width: 100%;
-                height: auto;
-                order: 2;
-                border-right: none;
-                border-top: 1px solid #e5e7eb;
-                flex-direction: row;
-                overflow-x: auto;
-                padding: 0.5rem;
-                background: white;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 39;
+                display: none;
+                backdrop-filter: blur(3px);
+            }
+
+            .sidebar.active+.mobile-overlay {
+                display: block;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .chat-header {
+                padding-left: 0.5rem;
             }
 
             .sidebar-header {
-                display: none;
+                display: block;
+                /* Show header in sidebar again */
             }
 
             .channels-list {
-                display: flex;
-                padding: 0;
-                gap: 0.5rem;
+                display: block;
+                /* Vertical list */
+                padding: 1rem;
             }
 
             .channel-btn {
-                width: auto;
-                white-space: nowrap;
-                margin: 0;
-                padding: 0.5rem 1rem;
-                font-size: 0.875rem;
-                background: #f3f4f6;
+                width: 100%;
+                margin-bottom: 0.5rem;
+                background: transparent;
+                white-space: normal;
             }
 
             .channel-btn.active::before {
-                display: none;
+                display: block;
+                /* Restore indicator */
             }
 
             .channel-btn.active {
@@ -769,11 +777,16 @@
             font-family: monospace;
         }
 
-        .message-bubble code {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-family: monospace;
+        .modal-input {
+            width: 100%;
+            padding: 1rem;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            resize: none;
         }
 
         /* Typing Indicator */
@@ -862,6 +875,8 @@
         </div>
     </div>
 
+    <div id="modal-container"></div>
+
     <div class="chat-interface" id="chat-view">
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -880,10 +895,14 @@
             </div>
             <div class="channels-list" id="channels-list"></div>
         </aside>
+        <div class="mobile-overlay" id="mobile-overlay"></div>
         <main class="main-chat">
             <header class="chat-header">
-                <div class="channel-info">
-                    <h2 id="current-channel-name">📢 General</h2>
+                <div>
+                    <button class="mobile-menu-btn" id="menu-toggle">☰</button>
+                    <div class="channel-info" style="display:inline-block">
+                        <h2 id="current-channel-name">📢 General</h2>
+                    </div>
                 </div>
                 <div class="header-actions">
                     <div class="connection-status connecting" id="connection-status">
@@ -963,11 +982,6 @@
 
             const state = {
                 user: null, // { id, email, name, dept, year }
-                currentChannel: 'General',
-                messages: {},
-                subscription: null,
-                amplifyReady: false,
-                authState: 'signIn', // 'signIn', 'signUp', 'confirmSignUp'
                 currentChannel: 'General',
                 messages: {},
                 subscription: null,
@@ -1101,7 +1115,7 @@
                 } else {
                     console.error("Amplify failed to load after multiple attempts.");
                     setConnectionStatus('offline');
-                    alert("Error loading chat system. Please refresh the page.");
+                    showModal({ title: 'Error', body: 'Error loading chat system. Please refresh the page.', showCancel: false });
                 }
             }
 
@@ -1463,24 +1477,61 @@
                 sendControlMessage('REACT', msgId, emoji, state.user.email);
             };
 
+            function showModal({ title, body, actionText, onAction, onCancel, showCancel = true }) {
+                els.modalContainer.innerHTML = `
+                    <div class="modal-overlay active">
+                        <div class="modal-content">
+                            <div class="modal-title">${title}</div>
+                            <div class="modal-body">${body}</div>
+                            <div class="modal-actions">
+                                ${showCancel ? `<button class="modal-btn secondary" id="modal-cancel">Cancel</button>` : ''}
+                                <button class="modal-btn primary" id="modal-action">${actionText || 'OK'}</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                const overlay = els.modalContainer.querySelector('.modal-overlay');
+                const cancelBtn = els.modalContainer.querySelector('#modal-cancel');
+                const actionBtn = els.modalContainer.querySelector('#modal-action');
+
+                function close() {
+                    overlay.classList.remove('active');
+                    setTimeout(() => els.modalContainer.innerHTML = '', 300);
+                }
+
+                if (cancelBtn) cancelBtn.onclick = () => { close(); if (onCancel) onCancel(); };
+                actionBtn.onclick = () => {
+                    if (onAction) {
+                        if (onAction() !== false) close();
+                    } else close();
+                };
+            }
+
             window.editMessage = function (msgId) {
                 if (!state.user) return;
                 const msgs = state.messages[state.currentChannel];
                 const msg = msgs.find(m => m.id === msgId);
                 if (!msg) return;
 
-                const newContent = prompt("Edit message:", msg.content);
-                if (newContent !== null && newContent.trim() !== "" && newContent !== msg.content) {
-                    if (containsBadWords(newContent)) {
-                        alert("Language! 🚫");
-                        return;
+                showModal({
+                    title: 'Edit Message',
+                    body: `<textarea id="edit-input" class="modal-input" rows="3">${msg.content}</textarea>`,
+                    actionText: 'Save',
+                    onAction: () => {
+                        const newContent = document.getElementById('edit-input').value;
+                        if (newContent !== null && newContent.trim() !== "" && newContent !== msg.content) {
+                            if (containsBadWords(newContent)) {
+                                showModal({ title: 'Language Warning 🚫', body: 'Please keep the language clean!', showCancel: false });
+                                return false; // Don't close edit modal
+                            }
+                            msg.content = newContent;
+                            msg.isEdited = true;
+                            renderMessages();
+                            sendControlMessage('EDIT', msgId, newContent);
+                        }
                     }
-                    // Optimistic update
-                    msg.content = newContent;
-                    msg.isEdited = true;
-                    renderMessages();
-                    sendControlMessage('EDIT', msgId, newContent);
-                }
+                });
             };
 
             function renderMessages() {
@@ -1563,7 +1614,7 @@
                 if (!content || !state.user) return;
 
                 if (containsBadWords(content)) {
-                    alert("Please keep the language clean! 🚫");
+                    showModal({ title: 'Language Warning 🚫', body: 'Please keep the language clean!', showCancel: false });
                     return;
                 }
 
@@ -1646,7 +1697,6 @@
                     if (btn) loadChannel(btn.dataset.channel);
                 });
                 els.logoutBtn.addEventListener('click', logout);
-                els.logoutBtn.addEventListener('click', logout);
             }
 
             function init() {
@@ -1657,17 +1707,32 @@
                 els.messageInput = $('message-input');
                 els.sendBtn = $('send-btn');
                 els.currentChannelName = $('current-channel-name');
-                els.currentChannelName = $('current-channel-name');
                 els.starsContainer = $('stars-container');
                 els.connectionStatus = $('connection-status');
                 els.logoutBtn = $('logout-btn');
-                els.starsContainer = $('stars-container');
-                els.connectionStatus = $('connection-status');
-                els.logoutBtn = $('logout-btn');
+                els.modalContainer = $('modal-container');
+                els.menuToggle = $('menu-toggle');
+                els.sidebar = document.querySelector('.sidebar');
+                els.mobileOverlay = $('mobile-overlay');
 
                 generateStars();
                 renderChannels();
                 setupEvents();
+
+                // Mobile Menu Events
+                els.menuToggle.addEventListener('click', () => {
+                    els.sidebar.classList.add('active');
+                });
+                els.mobileOverlay.addEventListener('click', () => {
+                    els.sidebar.classList.remove('active');
+                });
+                // Close sidebar on channel select (mobile)
+                els.channelsList.addEventListener('click', (e) => {
+                    if (window.innerWidth <= 768 && e.target.closest('.channel-btn')) {
+                        els.sidebar.classList.remove('active');
+                    }
+                });
+
                 initAmplify();
             }
 
