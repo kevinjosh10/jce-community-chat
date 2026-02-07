@@ -45,11 +45,97 @@
         @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
+        /* --- Background Nebula --- */
+        .nebula-wrapper {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -2; /* Behind stars */
+            overflow: hidden;
+            pointer-events: none;
+            transition: transform 0.1s ease-out;
+        }
+
+        .nebula-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: floatOrb 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .n1 {
+            top: -10%; left: -10%;
+            width: 60vw; height: 60vw;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
+            animation-delay: 0s;
+        }
+
+        .n2 {
+            bottom: -20%; right: -10%;
+            width: 70vw; height: 70vw;
+            background: radial-gradient(circle, rgba(76, 29, 149, 0.5) 0%, transparent 70%);
+            animation-delay: -5s;
+        }
+
+        .n3 {
+            top: 40%; left: 40%;
+            width: 40vw; height: 40vw;
+            background: radial-gradient(circle, rgba(59, 7, 100, 0.5) 0%, transparent 70%);
+            animation-delay: -10s;
+            opacity: 0.2;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -30px) scale(1.1); }
+        }
+
+        /* --- Stars & Shooting Stars --- */
+        .stars-wrapper {
+            position: fixed;
+            top: 0; left: 0;
+            width: 110%; height: 110%; /* Larger for parallax */
+            left: -5%; top: -5%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+            transition: transform 0.1s ease-out;
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.1), 0 0 0 4px rgba(255,255,255,0.1), 0 0 10px rgba(255,255,255,1);
+            animation: shoot 2.5s linear forwards;
+            opacity: 0;
+        }
+
+        .shooting-star::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(90deg, #fff, transparent);
+            right: 1px;
+        }
+
+        @keyframes shoot {
+            0% { transform: rotate(315deg) translateX(0); opacity: 1; }
+            70% { opacity: 1; }
+            100% { transform: rotate(315deg) translateX(-800px); opacity: 0; }
+        }
+
         /* --- Login / Auth UI --- */
         .auth-container {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-black);
+            background: rgba(0,0,0,0.4); /* Slight transparency to see bg */
             z-index: 1000;
             display: flex;
             align-items: center;
@@ -59,13 +145,14 @@
         }
         
         .auth-card {
-            background: var(--bg-panel);
+            background: rgba(5, 5, 5, 0.85); /* Glass effect */
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             padding: 2.5rem;
             border-radius: 24px;
             width: 100%;
             max-width: 420px;
-            box-shadow: 0 0 40px rgba(168, 85, 247, 0.1);
+            box-shadow: 0 0 40px rgba(168, 85, 247, 0.15);
             animation: slideInUp 0.4s ease-out;
             transform-style: preserve-3d;
             perspective: 1000px;
@@ -621,8 +708,15 @@
 </head>
 <body>
 
+    <!-- Nebula Background Layer -->
+    <div class="nebula-wrapper">
+        <div class="nebula-orb n1"></div>
+        <div class="nebula-orb n2"></div>
+        <div class="nebula-orb n3"></div>
+    </div>
+
     <!-- Stars Background -->
-    <div class="stars-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; overflow:hidden; pointer-events:none;"></div>
+    <div class="stars-wrapper"></div>
 
     <!-- Modals -->
     <div id="modal-container"></div>
@@ -789,6 +883,8 @@
         // --- INIT ---
         window.onload = () => {
             initStars();
+            initShootingStars();
+            initParallax();
             initAmplify();
             setupUIListeners();
         };
@@ -1424,6 +1520,36 @@
                 `;
                 wrap.appendChild(s);
             }
+        }
+
+        function initShootingStars() {
+            const wrap = document.querySelector('.stars-wrapper');
+            setInterval(() => {
+                const star = document.createElement('div');
+                star.className = 'shooting-star';
+                star.style.top = Math.random() * 80 + '%';
+                star.style.left = Math.random() * 80 + '%';
+                // Random size variation
+                const scale = Math.random() * 0.5 + 0.5;
+                star.style.transform = `scale(${scale})`;
+                
+                wrap.appendChild(star);
+                setTimeout(() => star.remove(), 2500);
+            }, 5000 + Math.random() * 3000);
+        }
+
+        function initParallax() {
+            document.addEventListener('mousemove', (e) => {
+                if(window.innerWidth < 768) return; // Disable on mobile
+                const x = (window.innerWidth - e.pageX * 2) / 100;
+                const y = (window.innerHeight - e.pageY * 2) / 100;
+
+                const nebula = document.querySelector('.nebula-wrapper');
+                const stars = document.querySelector('.stars-wrapper');
+                
+                if (nebula) nebula.style.transform = `translate(${x * 0.5}px, ${y * 0.5}px)`;
+                if (stars) stars.style.transform = `translate(${x}px, ${y}px)`;
+            });
         }
     </script>
 </body>
