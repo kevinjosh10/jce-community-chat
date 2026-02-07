@@ -44,16 +44,20 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @keyframes borderGlow {
+            0%, 100% { border-color: var(--border); box-shadow: 0 0 40px rgba(168, 85, 247, 0.15); }
+            50% { border-color: var(--primary); box-shadow: 0 0 60px rgba(168, 85, 247, 0.3); }
+        }
 
-        /* --- Background Nebula --- */
+        /* --- Background Nebula (Keep this for color) --- */
         .nebula-wrapper {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: -2; /* Behind stars */
+            z-index: -2;
             overflow: hidden;
             pointer-events: none;
-            transition: transform 0.1s ease-out;
+            opacity: 0.6; /* Slight dim to let stars pop */
         }
 
         .nebula-orb {
@@ -91,69 +95,48 @@
             100% { transform: translate(30px, -30px) scale(1.1); }
         }
 
-        /* --- Stars & Shooting Stars --- */
-        .stars-wrapper {
+        /* --- Canvas Layers --- */
+        #warp-canvas {
             position: fixed;
             top: 0; left: 0;
-            width: 110%; height: 110%; /* Larger for parallax */
-            left: -5%; top: -5%;
+            width: 100%; height: 100%;
             z-index: -1;
-            overflow: hidden;
+            mix-blend-mode: screen; 
+        }
+        
+        #infinity-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 900; /* Behind auth card (1000) */
             pointer-events: none;
-            transition: transform 0.1s ease-out;
-        }
-
-        .shooting-star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.1), 0 0 0 4px rgba(255,255,255,0.1), 0 0 10px rgba(255,255,255,1);
-            animation: shoot 2.5s linear forwards;
-            opacity: 0;
-        }
-
-        .shooting-star::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 150px;
-            height: 1px;
-            background: linear-gradient(90deg, #fff, transparent);
-            right: 1px;
-        }
-
-        @keyframes shoot {
-            0% { transform: rotate(315deg) translateX(0); opacity: 1; }
-            70% { opacity: 1; }
-            100% { transform: rotate(315deg) translateX(-800px); opacity: 0; }
+            transition: opacity 1s ease;
         }
 
         /* --- Login / Auth UI --- */
         .auth-container {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); /* Slight transparency to see bg */
+            background: rgba(0,0,0,0.2); 
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 1.5rem;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.5s ease;
         }
         
         .auth-card {
-            background: rgba(5, 5, 5, 0.85); /* Glass effect */
+            background: rgba(10, 10, 10, 0.65);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border);
-            padding: 2.5rem;
-            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            border-radius: 28px;
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             box-shadow: 0 0 40px rgba(168, 85, 247, 0.15);
-            animation: slideInUp 0.4s ease-out;
+            animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1), borderGlow 4s infinite;
             transform-style: preserve-3d;
             perspective: 1000px;
         }
@@ -163,14 +146,14 @@
             perspective: 800px;
             display: flex;
             justify-content: center;
-            margin-bottom: 2rem;
-            height: 50px;
+            margin-bottom: 2.5rem;
+            height: 60px;
         }
         
         .logo-3d {
             display: flex;
             transform-style: preserve-3d;
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 900;
             user-select: none;
             animation: logoFloat 6s ease-in-out infinite;
@@ -179,7 +162,7 @@
         .logo-3d span {
             display: inline-block;
             color: #fff;
-            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+            text-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
             opacity: 0;
             transform-origin: center;
             animation: logoEntrance 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -188,11 +171,13 @@
 
         /* Highlight "LIVE" */
         .logo-3d span.highlight {
-            color: var(--primary);
-            text-shadow: 0 0 15px var(--primary);
+            background: linear-gradient(to bottom, #d8b4fe, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 25px rgba(168, 85, 247, 0.8);
         }
 
-        .logo-3d .spacer { width: 0.6rem; }
+        .logo-3d .spacer { width: 0.8rem; }
 
         @keyframes logoEntrance {
             0% {
@@ -228,51 +213,72 @@
         .logo-3d span:nth-child(13) { animation-delay: 0.7s; }
 
         .input-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
             position: relative;
         }
 
         .input-field {
             width: 100%;
-            padding: 1rem;
-            background: #000;
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            padding: 1.1rem;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
             color: #fff;
             font-size: 1rem;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .input-field:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px var(--primary-dim);
+            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.15);
+            background: rgba(0,0,0,0.8);
+            transform: translateY(-2px);
         }
+
+        .input-field::placeholder { color: rgba(255,255,255,0.3); }
 
         .btn-full {
             width: 100%;
-            padding: 1rem;
-            background: var(--primary);
+            padding: 1.1rem;
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
             color: #fff;
             border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1.05rem;
             cursor: pointer;
-            transition: opacity 0.2s;
-            margin-top: 1rem;
+            transition: all 0.3s;
+            margin-top: 1.2rem;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn-full:hover { opacity: 0.9; }
+        .btn-full::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn-full:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.6);
+        }
+        .btn-full:hover::after { left: 100%; }
 
         .auth-link {
             text-align: center;
-            margin-top: 1.5rem;
+            margin-top: 1.8rem;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             cursor: pointer;
+            transition: color 0.2s;
         }
-        .auth-link:hover { color: var(--primary); }
+        .auth-link:hover { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
 
         /* --- Main App Layout --- */
         .app-layout {
@@ -715,8 +721,11 @@
         <div class="nebula-orb n3"></div>
     </div>
 
-    <!-- Stars Background -->
-    <div class="stars-wrapper"></div>
+    <!-- 3D Warp Canvas -->
+    <canvas id="warp-canvas"></canvas>
+
+    <!-- Infinity Loop Canvas -->
+    <canvas id="infinity-canvas"></canvas>
 
     <!-- Modals -->
     <div id="modal-container"></div>
@@ -882,9 +891,8 @@
 
         // --- INIT ---
         window.onload = () => {
-            initStars();
-            initShootingStars();
-            initParallax();
+            initWarpDrive();
+            initInfinityLoop();
             initAmplify();
             setupUIListeners();
         };
@@ -926,6 +934,10 @@
             $('avatar').innerText = state.user.name.charAt(0).toUpperCase();
             
             $('auth-view').style.opacity = '0';
+            // Also fade out the infinity loop canvas to let user focus on chat
+            const loopCanvas = document.getElementById('infinity-canvas');
+            if(loopCanvas) loopCanvas.style.opacity = '0';
+
             setTimeout(() => {
                 $('auth-view').style.display = 'none';
                 $('app-view').classList.add('active');
@@ -1507,49 +1519,180 @@
 
         window.closeModal = () => $('modal-container').innerHTML = '';
 
-        function initStars() {
-            const wrap = document.querySelector('.stars-wrapper');
-            for(let i=0; i<100; i++) {
-                const s = document.createElement('div');
-                const size = Math.random()*2 + 1;
-                s.style.cssText = `
-                    position:absolute; background:#fff; border-radius:50%;
-                    width:${size}px; height:${size}px;
-                    left:${Math.random()*100}%; top:${Math.random()*100}%;
-                    opacity:${Math.random()}; animation:pulse ${Math.random()*3+2}s infinite;
-                `;
-                wrap.appendChild(s);
+        // --- 3D WARP DRIVE SYSTEM ---
+        function initWarpDrive() {
+            const canvas = document.getElementById('warp-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height, cx, cy;
+            
+            // Star Params
+            const stars = [];
+            const numStars = 600; // Dense starfield
+            const speed = 4;      // Speed factor
+            
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                cx = width / 2;
+                cy = height / 2;
             }
-        }
 
-        function initShootingStars() {
-            const wrap = document.querySelector('.stars-wrapper');
-            setInterval(() => {
-                const star = document.createElement('div');
-                star.className = 'shooting-star';
-                star.style.top = Math.random() * 80 + '%';
-                star.style.left = Math.random() * 80 + '%';
-                // Random size variation
-                const scale = Math.random() * 0.5 + 0.5;
-                star.style.transform = `scale(${scale})`;
-                
-                wrap.appendChild(star);
-                setTimeout(() => star.remove(), 2500);
-            }, 5000 + Math.random() * 3000);
-        }
-
-        function initParallax() {
-            document.addEventListener('mousemove', (e) => {
-                if(window.innerWidth < 768) return; // Disable on mobile
-                const x = (window.innerWidth - e.pageX * 2) / 100;
-                const y = (window.innerHeight - e.pageY * 2) / 100;
-
-                const nebula = document.querySelector('.nebula-wrapper');
-                const stars = document.querySelector('.stars-wrapper');
-                
-                if (nebula) nebula.style.transform = `translate(${x * 0.5}px, ${y * 0.5}px)`;
-                if (stars) stars.style.transform = `translate(${x}px, ${y}px)`;
+            // Mouse interaction: Move center
+            window.addEventListener('mousemove', (e) => {
+                const dx = (e.clientX - width/2) * 0.1;
+                const dy = (e.clientY - height/2) * 0.1;
+                cx = (width/2) + dx;
+                cy = (height/2) + dy;
             });
+
+            class Star {
+                constructor() { this.reset(true); }
+                
+                reset(initial = false) {
+                    this.x = (Math.random() * width - width/2) * (width / 50); // Spread wide
+                    this.y = (Math.random() * height - height/2) * (width / 50);
+                    this.z = initial ? Math.random() * width : width; // Initial scatter
+                    this.pz = this.z; // Previous Z for trails
+                }
+
+                update() {
+                    this.z -= speed * 15; // Move closer
+                    if (this.z <= 0) {
+                        this.reset();
+                        this.z = width;
+                        this.pz = this.z;
+                    }
+                }
+
+                draw() {
+                    const x = (this.x / this.z) * width + cx;
+                    const y = (this.y / this.z) * width + cy;
+
+                    const size = (1 - this.z / width) * 4;
+                    
+                    // Simple Trail Logic: Draw line from previous position to new position
+                    // We approximate "previous position" by just projecting slightly further back
+                    const px = (this.x / (this.z + speed*20)) * width + cx;
+                    const py = (this.y / (this.z + speed*20)) * width + cy;
+
+                    if (x > 0 && x < width && y > 0 && y < height) {
+                        const alpha = (1 - this.z / width);
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                        ctx.lineWidth = size * 0.5;
+                        ctx.moveTo(px, py);
+                        ctx.lineTo(x, y);
+                        ctx.stroke();
+                        
+                        ctx.beginPath();
+                        ctx.fillStyle = `rgba(168, 85, 247, ${alpha})`; // Subtle purple tint
+                        ctx.arc(x, y, size * 0.4, 0, Math.PI*2);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // Initialize
+            resize();
+            window.addEventListener('resize', resize);
+            for(let i=0; i<numStars; i++) stars.push(new Star());
+
+            function animate() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; // Clear with trailing for extra blur
+                ctx.fillRect(0, 0, width, height);
+
+                stars.forEach(s => {
+                    s.update();
+                    s.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- 3D INFINITY LOOP ---
+        function initInfinityLoop() {
+            const canvas = document.getElementById('infinity-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+
+            const particleCount = 450;
+            const particles = [];
+            const color = '#a855f7'; 
+            let angleX = 0;
+            let angleY = 0;
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    t: Math.random() * Math.PI * 2,
+                    speed: 0.002 + Math.random() * 0.004,
+                    size: Math.random() * 2.5 + 0.5
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                
+                angleY += 0.004;
+                angleX += 0.002;
+
+                const cx = width / 2;
+                const cy = height / 2;
+                const scale = Math.min(width, height) * 0.35; 
+
+                ctx.fillStyle = color;
+                
+                particles.forEach(p => {
+                    p.t += p.speed;
+                    const t = p.t;
+                    
+                    // 3D Curve Equations
+                    let x = Math.cos(t);
+                    let y = Math.sin(2 * t) * 0.5;
+                    let z = Math.sin(t) * 0.5;
+
+                    x *= scale;
+                    y *= scale;
+                    z *= scale;
+
+                    // Rotation Y
+                    let x1 = x * Math.cos(angleY) - z * Math.sin(angleY);
+                    let z1 = x * Math.sin(angleY) + z * Math.cos(angleY);
+                    let y1 = y;
+
+                    // Rotation X
+                    let y2 = y1 * Math.cos(angleX) - z1 * Math.sin(angleX);
+                    let z2 = y1 * Math.sin(angleX) + z1 * Math.cos(angleX);
+                    let x2 = x1;
+
+                    // Projection
+                    const perspective = 800;
+                    const dist = perspective + z2;
+                    const m = perspective / dist;
+                    
+                    const px = cx + x2 * m;
+                    const py = cy + y2 * m;
+                    const pSize = p.size * m;
+
+                    const alpha = (z2 + scale*0.5) / scale; 
+                    
+                    ctx.globalAlpha = Math.max(0.1, Math.min(1, alpha));
+                    ctx.beginPath();
+                    ctx.arc(px, py, pSize, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                ctx.globalAlpha = 1;
+                requestAnimationFrame(animate);
+            }
+            animate();
         }
     </script>
 </body>
