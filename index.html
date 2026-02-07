@@ -34,6 +34,7 @@
             background: var(--bg-black);
             color: var(--text-main);
             height: 100vh;
+            height: 100dvh; /* Mobile viewport fix */
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -537,8 +538,17 @@
             .mobile-menu-toggle { display: block; }
             .chat-header { padding: 0 1rem; }
             .msg-group { max-width: 85%; }
-            .msg-actions { display: flex; opacity: 1; }
             
+            /* Actions: hidden by default, shown via JS class on tap */
+            .msg-actions { display: none; } 
+            .msg-group.show-actions .msg-actions { display: flex; animation: fadeIn 0.2s; }
+            
+            /* Input fix */
+            .chat-input-wrapper {
+                padding: 1rem;
+                padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+            }
+
             .mobile-overlay {
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(0,0,0,0.5); z-index: 40;
@@ -1276,6 +1286,25 @@
             $('mob-overlay').onclick = () => {
                 $('sidebar').classList.remove('open');
                 $('mob-overlay').style.display = 'none';
+            };
+
+            // Mobile: Tap message to toggle actions
+            $('chat-box').onclick = (e) => {
+                if(window.innerWidth > 768) return; // Only for mobile behavior
+                
+                const group = e.target.closest('.msg-group');
+                // Ignore if clicking the actions themselves or reactions
+                if (e.target.closest('.msg-actions') || e.target.closest('.reaction-tag')) return;
+
+                // Close others
+                document.querySelectorAll('.msg-group.show-actions').forEach(el => {
+                    if (el !== group) el.classList.remove('show-actions');
+                });
+
+                // Toggle current
+                if (group) {
+                    group.classList.toggle('show-actions');
+                }
             };
         }
 
