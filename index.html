@@ -1,1239 +1,1331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>JCE LIVE CHAT</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root {
---bg-black: #000000;
---bg-panel: #050505;
---border: #1a1a1a;
---primary: #a855f7;
---primary-dim: rgba(168, 85, 247, 0.15);
---primary-hover: #9333ea;
---text-main: #ffffff;
---text-muted: #a1a1aa;
---danger: #ef4444;
---glass: rgba(0, 0, 0, 0.8);
-}
-code
-Code
-* {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        -webkit-tap-highlight-color: transparent;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JCE LIVE CHAT</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #000000;
+            --bg-panel: #050505;
+            --border: #1a1a1a;
+            --primary: #a855f7;
+            --primary-dim: rgba(168, 85, 247, 0.15);
+            --primary-hover: #9333ea;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            --danger: #ef4444;
+            --glass: rgba(0, 0, 0, 0.8);
+        }
 
-    body {
-        font-family: 'Inter', sans-serif;
-        background: var(--bg-black);
-        color: var(--text-main);
-        height: 100vh;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    /* --- Animations --- */
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-black);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-    /* --- Login / Auth UI --- */
-    .auth-container {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: var(--bg-black);
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1.5rem;
-        transition: opacity 0.3s ease;
-    }
-    
-    .auth-card {
-        background: var(--bg-panel);
-        border: 1px solid var(--border);
-        padding: 2.5rem;
-        border-radius: 24px;
-        width: 100%;
-        max-width: 420px;
-        box-shadow: 0 0 40px rgba(168, 85, 247, 0.1);
-        animation: slideInUp 0.4s ease-out;
-    }
+        /* --- Animations --- */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
-    .auth-title {
-        text-align: center;
-        font-size: 2rem;
-        font-weight: 800;
-        margin-bottom: 2rem;
-        background: linear-gradient(to right, #fff, #a855f7);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .input-group {
-        margin-bottom: 1.25rem;
-        position: relative;
-    }
-
-    .input-field {
-        width: 100%;
-        padding: 1rem;
-        background: #000;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        color: #fff;
-        font-size: 1rem;
-        transition: all 0.2s;
-    }
-
-    .input-field:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px var(--primary-dim);
-    }
-
-    .btn-full {
-        width: 100%;
-        padding: 1rem;
-        background: var(--primary);
-        color: #fff;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: opacity 0.2s;
-        margin-top: 1rem;
-    }
-
-    .btn-full:hover { opacity: 0.9; }
-
-    .auth-link {
-        text-align: center;
-        margin-top: 1.5rem;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-        cursor: pointer;
-    }
-    .auth-link:hover { color: var(--primary); }
-
-    /* --- Main App Layout --- */
-    .app-layout {
-        display: flex;
-        height: 100%;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.5s;
-    }
-    .app-layout.active { opacity: 1; pointer-events: all; }
-
-    /* Sidebar */
-    .sidebar {
-        width: 280px;
-        background: var(--bg-panel);
-        border-right: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        flex-shrink: 0;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 50;
-    }
-
-    .sidebar-header {
-        padding: 1.5rem;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .user-card {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 1rem;
-    }
-
-    .user-avatar {
-        width: 42px; height: 42px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), #7c3aed);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 1.1rem;
-    }
-
-    .user-meta h3 { font-size: 0.95rem; font-weight: 600; }
-    .user-meta p { font-size: 0.75rem; color: var(--text-muted); }
-
-    .btn-logout {
-        width: 100%;
-        padding: 0.6rem;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 0.85rem;
-        transition: all 0.2s;
-    }
-    .btn-logout:hover { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: var(--danger); }
-
-    .channel-nav {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1rem 0.75rem;
-    }
-
-    /* Channel Styles */
-    .channel-category {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #52525b;
-        font-weight: 700;
-        margin: 1.5rem 0 0.5rem 0.75rem;
-    }
-    .channel-category:first-child { margin-top: 0.5rem; }
-
-    .channel-item {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        padding: 0.6rem 0.75rem;
-        margin-bottom: 2px;
-        background: transparent;
-        border: none;
-        color: var(--text-muted);
-        text-align: left;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 0.95rem;
-        font-weight: 500;
-        transition: all 0.2s;
-        text-decoration: none;
-    }
-
-    .channel-item:hover {
-        background: rgba(255,255,255,0.03);
-        color: #fff;
-    }
-
-    .channel-item.active {
-        background: var(--primary-dim);
-        color: var(--primary);
-    }
-
-    .channel-item.main-room {
-        font-weight: 600;
-    }
-
-    .channel-item.sub-room {
-        font-size: 0.9rem;
-        padding-left: 1.75rem;
-        opacity: 0.8;
-        position: relative;
-    }
-    
-    .channel-item.sub-room::before {
-        content: '';
-        position: absolute;
-        left: 0.75rem;
-        top: 50%;
-        width: 4px;
-        height: 4px;
-        background: #333;
-        border-radius: 50%;
-        transform: translateY(-50%);
-    }
-    .channel-item.sub-room.active::before { background: var(--primary); }
-
-    /* Main Chat Area */
-    .chat-main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        background: var(--bg-black);
-        position: relative;
-        width: 100%;
-    }
-
-    .chat-header {
-        height: 70px;
-        padding: 0 1.5rem;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: rgba(0,0,0,0.8);
-        backdrop-filter: blur(10px);
-        z-index: 10;
-    }
-
-    .header-title-group {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .mobile-menu-toggle {
-        display: none;
-        background: none;
-        border: none;
-        color: #fff;
-        font-size: 1.5rem;
-        cursor: pointer;
-    }
-
-    .room-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .room-subtitle {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        font-weight: 400;
-    }
-
-    .chat-messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .empty-state {
-        text-align: center;
-        color: var(--text-muted);
-        margin-top: 4rem;
-        font-size: 0.9rem;
-    }
-
-    /* Message Bubbles */
-    .msg-group {
-        display: flex;
-        flex-direction: column;
-        max-width: 75%;
-        animation: slideInUp 0.2s ease-out;
-        position: relative;
-    }
-
-    .msg-group.own {
-        align-self: flex-end;
-        align-items: flex-end;
-    }
-
-    .msg-group.other {
-        align-self: flex-start;
-        align-items: flex-start;
-    }
-
-    .msg-sender {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        margin-bottom: 4px;
-        margin-left: 12px;
-    }
-
-    .msg-bubble {
-        padding: 0.85rem 1rem;
-        border-radius: 18px;
-        font-size: 0.95rem;
-        line-height: 1.5;
-        position: relative;
-        word-wrap: break-word;
-    }
-
-    .msg-group.own .msg-bubble {
-        background: var(--primary);
-        color: white;
-        border-bottom-right-radius: 4px;
-    }
-
-    .msg-group.other .msg-bubble {
-        background: #18181b;
-        color: #e4e4e7;
-        border: 1px solid var(--border);
-        border-bottom-left-radius: 4px;
-    }
-
-    .msg-meta {
-        font-size: 0.7rem;
-        color: rgba(255,255,255,0.4);
-        margin-top: 4px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .msg-group.other .msg-meta { color: var(--text-muted); }
-
-    /* Message Actions */
-    .msg-actions {
-        position: absolute;
-        top: -20px;
-        right: 0;
-        background: #27272a;
-        border-radius: 20px;
-        padding: 4px 8px;
-        display: none;
-        gap: 4px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        border: 1px solid var(--border);
-        z-index: 5;
-    }
-    .msg-group:hover .msg-actions { display: flex; }
-    .msg-group.other .msg-actions { right: auto; left: 0; }
-
-    .action-btn {
-        background: none;
-        border: none;
-        color: #a1a1aa;
-        cursor: pointer;
-        padding: 4px;
-        border-radius: 50%;
-        font-size: 1rem;
-        transition: all 0.2s;
-    }
-    .action-btn:hover { background: #3f3f46; color: #fff; transform: scale(1.1); }
-
-    .reactions-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        margin-top: 4px;
-    }
-    .reaction-tag {
-        background: rgba(255,255,255,0.05);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 2px 8px;
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .reaction-tag.active {
-        background: var(--primary-dim);
-        border-color: var(--primary);
-        color: var(--primary);
-    }
-
-    /* Input Area */
-    .chat-input-wrapper {
-        padding: 1.5rem;
-        background: transparent;
-        position: relative;
-    }
-
-    .typing-status {
-        position: absolute;
-        top: 0;
-        left: 1.5rem;
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        font-style: italic;
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-    .typing-status.active { opacity: 1; }
-
-    .input-bar {
-        display: flex;
-        gap: 0.75rem;
-        background: var(--bg-panel);
-        padding: 0.5rem;
-        border-radius: 16px;
-        border: 1px solid var(--border);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        align-items: flex-end;
-    }
-
-    .msg-input {
-        flex: 1;
-        background: transparent;
-        border: none;
-        padding: 0.75rem 1rem;
-        color: #fff;
-        font-family: inherit;
-        font-size: 1rem;
-        resize: none;
-        max-height: 100px;
-        min-height: 24px;
-    }
-    .msg-input:focus { outline: none; }
-
-    .btn-send {
-        width: 42px; height: 42px;
-        border-radius: 12px;
-        background: var(--primary);
-        border: none;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        flex-shrink: 0;
-        transition: all 0.2s;
-    }
-    .btn-send:hover { transform: scale(1.05); background: var(--primary-hover); }
-
-    /* Modal */
-    .modal-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.85);
-        backdrop-filter: blur(4px);
-        z-index: 2000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0; pointer-events: none;
-        transition: opacity 0.3s;
-    }
-    .modal-overlay.active { opacity: 1; pointer-events: all; }
-
-    .modal-box {
-        background: #121212;
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 2rem;
-        width: 90%; max-width: 400px;
-        transform: scale(0.95);
-        transition: transform 0.3s;
-    }
-    .modal-overlay.active .modal-box { transform: scale(1); }
-
-    .modal-actions {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1.5rem;
-        justify-content: flex-end;
-    }
-
-    /* Mobile Responsive */
-    @media (max-width: 768px) {
-        .sidebar {
+        /* --- Login / Auth UI --- */
+        .auth-container {
             position: fixed;
-            top: 0; left: 0; bottom: 0;
-            transform: translateX(-100%);
-            box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-black);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            transition: opacity 0.3s ease;
         }
-        .sidebar.open { transform: translateX(0); }
         
-        .mobile-menu-toggle { display: block; }
-        .chat-header { padding: 0 1rem; }
-        .msg-group { max-width: 85%; }
-        .msg-actions { display: flex; opacity: 1; }
+        .auth-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 0 40px rgba(168, 85, 247, 0.1);
+            animation: slideInUp 0.4s ease-out;
+        }
+
+        .auth-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: linear-gradient(to right, #fff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 1rem;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-dim);
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn-full:hover { opacity: 0.9; }
+
+        .auth-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .auth-link:hover { color: var(--primary); }
+
+        /* --- Main App Layout --- */
+        .app-layout {
+            display: flex;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        .app-layout.active { opacity: 1; pointer-events: all; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .user-avatar {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .user-meta h3 { font-size: 0.95rem; font-weight: 600; }
+        .user-meta p { font-size: 0.75rem; color: var(--text-muted); }
+
+        .btn-logout {
+            width: 100%;
+            padding: 0.6rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: var(--danger); }
+
+        .channel-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0.75rem;
+        }
+
+        /* Channel Styles */
+        .channel-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #52525b;
+            font-weight: 700;
+            margin: 1.5rem 0 0.5rem 0.75rem;
+        }
+        .channel-category:first-child { margin-top: 0.5rem; }
+
+        .channel-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            margin-bottom: 2px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .channel-item:hover {
+            background: rgba(255,255,255,0.03);
+            color: #fff;
+        }
+
+        .channel-item.active {
+            background: var(--primary-dim);
+            color: var(--primary);
+        }
+
+        .channel-item.main-room {
+            font-weight: 600;
+        }
+
+        .channel-item.sub-room {
+            font-size: 0.9rem;
+            padding-left: 1.75rem;
+            opacity: 0.8;
+            position: relative;
+        }
         
-        .mobile-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 40;
+        .channel-item.sub-room::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            width: 4px;
+            height: 4px;
+            background: #333;
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+        .channel-item.sub-room.active::before { background: var(--primary); }
+
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-black);
+            position: relative;
+            width: 100%;
+        }
+
+        .chat-header {
+            height: 70px;
+            padding: 0 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .header-title-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .mobile-menu-toggle {
             display: none;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
         }
-        .sidebar.open + .mobile-overlay { display: block; }
-    }
-</style>
+
+        .room-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .room-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 4rem;
+            font-size: 0.9rem;
+        }
+
+        /* Message Bubbles */
+        .msg-group {
+            display: flex;
+            flex-direction: column;
+            max-width: 75%;
+            animation: slideInUp 0.2s ease-out;
+            position: relative;
+        }
+
+        .msg-group.own {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .msg-group.other {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .msg-sender {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            margin-left: 12px;
+        }
+
+        .msg-bubble {
+            padding: 0.85rem 1rem;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .msg-group.own .msg-bubble {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-group.other .msg-bubble {
+            background: #18181b;
+            color: #e4e4e7;
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-meta {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .msg-group.other .msg-meta { color: var(--text-muted); }
+
+        /* Message Actions */
+        .msg-actions {
+            position: absolute;
+            top: -20px;
+            right: 0;
+            background: #27272a;
+            border-radius: 20px;
+            padding: 4px 8px;
+            display: none;
+            gap: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            z-index: 5;
+        }
+        .msg-group:hover .msg-actions { display: flex; }
+        .msg-group.other .msg-actions { right: auto; left: 0; }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #a1a1aa;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .action-btn:hover { background: #3f3f46; color: #fff; transform: scale(1.1); }
+
+        .reactions-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .reaction-tag {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .reaction-tag.active {
+            background: var(--primary-dim);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Input Area */
+        .chat-input-wrapper {
+            padding: 1.5rem;
+            background: transparent;
+            position: relative;
+        }
+
+        .typing-status {
+            position: absolute;
+            top: 0;
+            left: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .typing-status.active { opacity: 1; }
+
+        .input-bar {
+            display: flex;
+            gap: 0.75rem;
+            background: var(--bg-panel);
+            padding: 0.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            align-items: flex-end;
+        }
+
+        .msg-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.75rem 1rem;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            max-height: 100px;
+            min-height: 24px;
+        }
+        .msg-input:focus { outline: none; }
+
+        .btn-send {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            background: var(--primary);
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .btn-send:hover { transform: scale(1.05); background: var(--primary-hover); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+        .modal-box {
+            background: #121212;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%; max-width: 400px;
+            transform: scale(0.95);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0; left: 0; bottom: 0;
+                transform: translateX(-100%);
+                box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+            }
+            .sidebar.open { transform: translateX(0); }
+            
+            .mobile-menu-toggle { display: block; }
+            .chat-header { padding: 0 1rem; }
+            .msg-group { max-width: 85%; }
+            .msg-actions { display: flex; opacity: 1; }
+            
+            .mobile-overlay {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); z-index: 40;
+                display: none;
+            }
+            .sidebar.open + .mobile-overlay { display: block; }
+        }
+    </style>
 </head>
 <body>
-code
-Code
-<!-- Stars Background -->
-<div class="stars-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; overflow:hidden; pointer-events:none;"></div>
 
-<!-- Modals -->
-<div id="modal-container"></div>
+    <!-- Stars Background -->
+    <div class="stars-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; overflow:hidden; pointer-events:none;"></div>
 
-<!-- Auth Section -->
-<div class="auth-container" id="auth-view">
-    <div class="auth-card">
-        <h1 class="auth-title">JCE CHAT</h1>
-        
-        <!-- Login Form -->
-        <div id="login-form">
-            <div class="input-group">
-                <input type="text" class="input-field" id="login-email" placeholder="Email Address">
-            </div>
-            <div class="input-group">
-                <input type="password" class="input-field" id="login-pass" placeholder="Password">
-            </div>
-            <button class="btn-full" id="btn-login">Sign In</button>
-            <div class="auth-link" onclick="switchAuth('signup')">Create an account</div>
-        </div>
+    <!-- Modals -->
+    <div id="modal-container"></div>
 
-        <!-- Signup Form -->
-        <div id="signup-form" style="display:none;">
-            <div class="input-group"><input type="text" class="input-field" id="reg-name" placeholder="Full Name"></div>
-            <div class="input-group"><input type="email" class="input-field" id="reg-email" placeholder="College Email"></div>
-            <div class="input-group">
-                <select class="input-field" id="reg-dept" style="appearance:none;">
-                    <option value="" disabled selected>Select Department</option>
-                    <option value="CSE">CSE</option>
-                    <option value="ECE">ECE</option>
-                    <option value="EEE">EEE</option>
-                    <option value="MECH">MECH</option>
-                    <option value="IT">IT</option>
-                    <option value="AIDS">AI & DS</option>
-                </select>
+    <!-- Auth Section -->
+    <div class="auth-container" id="auth-view">
+        <div class="auth-card">
+            <h1 class="auth-title">JCE CHAT</h1>
+            
+            <!-- Login Form -->
+            <div id="login-form">
+                <div class="input-group">
+                    <input type="text" class="input-field" id="login-email" placeholder="Email Address">
+                </div>
+                <div class="input-group">
+                    <input type="password" class="input-field" id="login-pass" placeholder="Password">
+                </div>
+                <button class="btn-full" id="btn-login">Sign In</button>
+                <div class="auth-link" onclick="switchAuth('signup')">Create an account</div>
             </div>
-            <div class="input-group">
-                <select class="input-field" id="reg-year" style="appearance:none;">
-                    <option value="" disabled selected>Select Year</option>
-                    <option value="I">I Year</option>
-                    <option value="II">II Year</option>
-                    <option value="III">III Year</option>
-                    <option value="IV">IV Year</option>
-                </select>
-            </div>
-            <div class="input-group"><input type="password" class="input-field" id="reg-pass" placeholder="Password"></div>
-            <button class="btn-full" id="btn-signup">Create Account</button>
-            <div class="auth-link" onclick="switchAuth('login')">Back to Sign In</div>
-        </div>
 
-        <!-- Verify Form -->
-        <div id="verify-form" style="display:none;">
-            <p style="text-align:center; color:#a1a1aa; margin-bottom:1rem;">Check your email for code</p>
-            <div class="input-group"><input type="text" class="input-field" id="verify-code" placeholder="Verification Code"></div>
-            <button class="btn-full" id="btn-verify">Verify</button>
+            <!-- Signup Form -->
+            <div id="signup-form" style="display:none;">
+                <div class="input-group"><input type="text" class="input-field" id="reg-name" placeholder="Full Name"></div>
+                <div class="input-group"><input type="email" class="input-field" id="reg-email" placeholder="College Email"></div>
+                <div class="input-group">
+                    <select class="input-field" id="reg-dept" style="appearance:none;">
+                        <option value="" disabled selected>Select Department</option>
+                        <option value="CSE">CSE</option>
+                        <option value="ECE">ECE</option>
+                        <option value="EEE">EEE</option>
+                        <option value="MECH">MECH</option>
+                        <option value="IT">IT</option>
+                        <option value="AIDS">AI & DS</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <select class="input-field" id="reg-year" style="appearance:none;">
+                        <option value="" disabled selected>Select Year</option>
+                        <option value="I">I Year</option>
+                        <option value="II">II Year</option>
+                        <option value="III">III Year</option>
+                        <option value="IV">IV Year</option>
+                    </select>
+                </div>
+                <div class="input-group"><input type="password" class="input-field" id="reg-pass" placeholder="Password"></div>
+                <button class="btn-full" id="btn-signup">Create Account</button>
+                <div class="auth-link" onclick="switchAuth('login')">Back to Sign In</div>
+            </div>
+
+            <!-- Verify Form -->
+            <div id="verify-form" style="display:none;">
+                <p style="text-align:center; color:#a1a1aa; margin-bottom:1rem;">Check your email for code</p>
+                <div class="input-group"><input type="text" class="input-field" id="verify-code" placeholder="Verification Code"></div>
+                <button class="btn-full" id="btn-verify">Verify</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Main App -->
-<div class="app-layout" id="app-view">
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="user-card">
-                <div class="user-avatar" id="avatar">U</div>
-                <div class="user-meta">
-                    <h3 id="u-name">User</h3>
-                    <p id="u-dept">Dept</p>
+    <!-- Main App -->
+    <div class="app-layout" id="app-view">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="user-card">
+                    <div class="user-avatar" id="avatar">U</div>
+                    <div class="user-meta">
+                        <h3 id="u-name">User</h3>
+                        <p id="u-dept">Dept</p>
+                    </div>
                 </div>
+                <button class="btn-logout" id="btn-logout">Sign Out</button>
             </div>
-            <button class="btn-logout" id="btn-logout">Sign Out</button>
-        </div>
-        <nav class="channel-nav" id="channel-list">
-            <!-- Channels rendered via JS -->
-        </nav>
-    </aside>
-    <div class="mobile-overlay" id="mob-overlay"></div>
+            <nav class="channel-nav" id="channel-list">
+                <!-- Channels rendered via JS -->
+            </nav>
+        </aside>
+        <div class="mobile-overlay" id="mob-overlay"></div>
 
-    <main class="chat-main">
-        <header class="chat-header">
-            <div class="header-title-group">
-                <button class="mobile-menu-toggle" id="menu-btn">☰</button>
-                <div>
-                    <div class="room-title" id="room-title"># General</div>
-                    <div class="room-subtitle" id="room-desc">Main Lobby</div>
+        <main class="chat-main">
+            <header class="chat-header">
+                <div class="header-title-group">
+                    <button class="mobile-menu-toggle" id="menu-btn">☰</button>
+                    <div>
+                        <div class="room-title" id="room-title"># General</div>
+                        <div class="room-subtitle" id="room-desc">Main Lobby</div>
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
 
-        <div class="chat-messages" id="chat-box"></div>
-        
-        <div class="chat-input-wrapper">
-            <div class="typing-status" id="typing-txt">Someone is typing...</div>
-            <div class="input-bar">
-                <textarea class="msg-input" id="msg-input" placeholder="Type a message..." rows="1"></textarea>
-                <button class="btn-send" id="btn-send">➤</button>
-            </div>
-        </div>
-    </main>
-</div>
-
-<script src="https://unpkg.com/aws-amplify@4.3.46/dist/aws-amplify.min.js"></script>
-<script>
-    // --- CONSTANTS & CONFIG ---
-    const AWS_CONFIG = {
-        aws_project_region: "ap-south-1",
-        aws_cognito_identity_pool_id: "ap-south-1:0caa5756-e06c-4664-b192-0212359cf6a0",
-        aws_cognito_region: "ap-south-1",
-        aws_user_pools_id: "ap-south-1_ZqT8AaT5Y",
-        aws_user_pools_web_client_id: "4k2pg0p5cl5kciuqahlq4kqfob",
-        aws_appsync_graphqlEndpoint: "https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql",
-        aws_appsync_region: "ap-south-1",
-        aws_appsync_authenticationType: "AMAZON_COGNITO_USER_POOLS"
-    };
-
-    const QUERIES = {
-        list: `query ListMessages($filter: ModelMessageFilterInput, $limit: Int) { listMessages(filter: $filter, limit: $limit) { items { id channel content email name dept year timestamp createdAt } } }`,
-        create: `mutation CreateMessage($input: CreateMessageInput!) { createMessage(input: $input) { id channel content email name dept year timestamp createdAt } }`,
-        delete: `mutation DeleteMessage($input: DeleteMessageInput!) { deleteMessage(input: $input) { id } }`,
-        subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channel content email name dept year timestamp createdAt } }`,
-        subscribeDelete: `subscription OnDeleteMessage($filter: ModelSubscriptionMessageFilterInput) { onDeleteMessage(filter: $filter) { id channel } }`
-    };
-
-    const CHANNEL_TREE = {
-        "General": [],
-        "Academics": ["Exams", "Notes", "Doubt Solving"],
-        "Placements": ["Internships", "Resume", "Company Prep"],
-        "Projects": ["Web", "Cloud", "AI / ML"],
-        "LinkedIn": ["Profile Review", "Content Ideas", "Job Posts"],
-        "Announcements": []
-    };
-
-    const BAD_WORDS = ["fuck", "shit", "bitch", "asshole", "cunt", "dick", "pussy", "bastard", "idiot", "stupid", "mayiru", "mair", "thevdia", "thevidiya", "punda", "pundai", "ommale", "ommala", "sunni", "poolu", "kuyyam", "othu", "otha", "omma", "baadu", "item", "potte"];
-    
-    // --- STATE MANAGEMENT ---
-    const state = {
-        user: null,
-        currentChannelID: 'General', 
-        messages: {}, // { channelID: [msgs] }
-        subscriptions: [],
-        pendingVerify: null,
-        typing: {},
-        reactions: {} // { msgId: { emoji: [emails] } }
-    };
-
-    // --- DOM ELEMENTS ---
-    const $ = id => document.getElementById(id);
-
-    // --- INIT ---
-    window.onload = () => {
-        initStars();
-        initAmplify();
-        setupUIListeners();
-    };
-
-    function initAmplify() {
-        if (window.aws_amplify) {
-            window.aws_amplify.Amplify.configure(AWS_CONFIG);
-            checkSession();
-        } else {
-            setTimeout(initAmplify, 500);
-        }
-    }
-
-    async function checkSession() {
-        try {
-            const user = await window.aws_amplify.Auth.currentAuthenticatedUser();
-            loadUser(user);
-        } catch {
-            $('auth-view').style.display = 'flex';
-            $('app-view').classList.remove('active');
-        }
-    }
-
-    // --- UI LOGIC ---
-    function renderNav() {
-        const list = $('channel-list');
-        list.innerHTML = '';
-
-        Object.keys(CHANNEL_TREE).forEach(key => {
-            const subs = CHANNEL_TREE[key];
+            <div class="chat-messages" id="chat-box"></div>
             
-            if (subs.length === 0) {
-                // Main Room
-                const isActive = state.currentChannelID === key;
-                const btn = document.createElement('button');
-                btn.className = `channel-item main-room ${isActive ? 'active' : ''}`;
-                btn.innerHTML = `# ${key}`;
-                btn.onclick = () => switchChannel(key);
-                list.appendChild(btn);
+            <div class="chat-input-wrapper">
+                <div class="typing-status" id="typing-txt">Someone is typing...</div>
+                <div class="input-bar">
+                    <textarea class="msg-input" id="msg-input" placeholder="Type a message..." rows="1"></textarea>
+                    <button class="btn-send" id="btn-send">➤</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/aws-amplify@4.3.46/dist/aws-amplify.min.js"></script>
+    <script>
+        // --- CONSTANTS & CONFIG ---
+        const AWS_CONFIG = {
+            aws_project_region: "ap-south-1",
+            aws_cognito_identity_pool_id: "ap-south-1:0caa5756-e06c-4664-b192-0212359cf6a0",
+            aws_cognito_region: "ap-south-1",
+            aws_user_pools_id: "ap-south-1_ZqT8AaT5Y",
+            aws_user_pools_web_client_id: "4k2pg0p5cl5kciuqahlq4kqfob",
+            aws_appsync_graphqlEndpoint: "https://hfywlop6qjgvngsljeda262rze.appsync-api.ap-south-1.amazonaws.com/graphql",
+            aws_appsync_region: "ap-south-1",
+            aws_appsync_authenticationType: "AMAZON_COGNITO_USER_POOLS"
+        };
+
+        const QUERIES = {
+            list: `query ListMessages($filter: ModelMessageFilterInput, $limit: Int) { listMessages(filter: $filter, limit: $limit) { items { id channel content email name dept year timestamp createdAt } } }`,
+            create: `mutation CreateMessage($input: CreateMessageInput!) { createMessage(input: $input) { id channel content email name dept year timestamp createdAt } }`,
+            delete: `mutation DeleteMessage($input: DeleteMessageInput!) { deleteMessage(input: $input) { id } }`,
+            subscribe: `subscription OnCreateMessage($filter: ModelSubscriptionMessageFilterInput) { onCreateMessage(filter: $filter) { id channel content email name dept year timestamp createdAt } }`,
+            subscribeDelete: `subscription OnDeleteMessage($filter: ModelSubscriptionMessageFilterInput) { onDeleteMessage(filter: $filter) { id channel } }`
+        };
+
+        const CHANNEL_TREE = {
+            "General": [],
+            "Academics": ["Exams", "Notes", "Doubt Solving"],
+            "Placements": ["Internships", "Resume", "Company Prep"],
+            "Projects": ["Web", "Cloud", "AI / ML"],
+            "LinkedIn": ["Profile Review", "Content Ideas", "Job Posts"],
+            "Announcements": []
+        };
+
+        const BAD_WORDS = ["fuck", "shit", "bitch", "asshole", "cunt", "dick", "pussy", "bastard", "idiot", "stupid", "mayiru", "mair", "thevdia", "thevidiya", "punda", "pundai", "ommale", "ommala", "sunni", "poolu", "kuyyam", "othu", "otha", "omma", "baadu", "item", "potte"];
+        
+        // --- STATE MANAGEMENT ---
+        const state = {
+            user: null, // { username, email, name, dept, year }
+            currentChannelID: 'General', 
+            messages: {}, // { channelID: [msgs] }
+            subscriptions: [],
+            pendingVerify: null,
+            typing: {},
+            reactions: {} // { msgId: { emoji: [emails] } }
+        };
+
+        // --- DOM ELEMENTS ---
+        const $ = id => document.getElementById(id);
+
+        // --- HELPER: UUID ---
+        // Replaced crypto.randomUUID() with a custom function to ensure compatibility with all environments
+        function uuid() { 
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => (c === 'x' ? Math.random() * 16 | 0 : (Math.random() * 16 | 0 & 0x3 | 0x8)).toString(16)); 
+        }
+
+        // --- INIT ---
+        window.onload = () => {
+            initStars();
+            initAmplify();
+            setupUIListeners();
+        };
+
+        function initAmplify() {
+            if (window.aws_amplify) {
+                window.aws_amplify.Amplify.configure(AWS_CONFIG);
+                checkSession();
             } else {
-                // Category + Sub Rooms
-                const catTitle = document.createElement('div');
-                catTitle.className = 'channel-category';
-                catTitle.innerText = key;
-                list.appendChild(catTitle);
+                setTimeout(initAmplify, 500);
+            }
+        }
 
-                subs.forEach(sub => {
-                    const fullId = `${key}::${sub}`;
-                    const isActive = state.currentChannelID === fullId;
+        async function checkSession() {
+            try {
+                const user = await window.aws_amplify.Auth.currentAuthenticatedUser();
+                loadUser(user);
+            } catch {
+                $('auth-view').style.display = 'flex';
+                $('app-view').classList.remove('active');
+            }
+        }
+
+        // --- AUTH ---
+        function loadUser(authUser) {
+            // Flatten user attributes to ensure easier access and schema compliance
+            // The API expects 'email' to be an actual email, NOT the username (UUID)
+            const attrs = authUser.attributes || {};
+            state.user = {
+                username: authUser.username, // Cognito Sub (UUID)
+                email: attrs.email,          // Actual Email Address
+                name: attrs.name || attrs.email.split('@')[0],
+                dept: attrs['custom:dept'] || 'Student',
+                year: attrs['custom:year'] || 'I'
+            };
+
+            $('u-name').innerText = state.user.name;
+            $('u-dept').innerText = `${state.user.dept} - ${state.user.year}`;
+            $('avatar').innerText = state.user.name.charAt(0).toUpperCase();
+            
+            $('auth-view').style.opacity = '0';
+            setTimeout(() => {
+                $('auth-view').style.display = 'none';
+                $('app-view').classList.add('active');
+                switchChannel('General');
+            }, 300);
+        }
+
+        // --- UI LOGIC ---
+        function renderNav() {
+            const list = $('channel-list');
+            list.innerHTML = '';
+
+            Object.keys(CHANNEL_TREE).forEach(key => {
+                const subs = CHANNEL_TREE[key];
+                
+                if (subs.length === 0) {
+                    // Main Room
+                    const isActive = state.currentChannelID === key;
                     const btn = document.createElement('button');
-                    btn.className = `channel-item sub-room ${isActive ? 'active' : ''}`;
-                    btn.innerHTML = sub;
-                    btn.onclick = () => switchChannel(fullId);
+                    btn.className = `channel-item main-room ${isActive ? 'active' : ''}`;
+                    btn.innerHTML = `# ${key}`;
+                    btn.onclick = () => switchChannel(key);
                     list.appendChild(btn);
-                });
-            }
-        });
-    }
+                } else {
+                    // Category + Sub Rooms
+                    const catTitle = document.createElement('div');
+                    catTitle.className = 'channel-category';
+                    catTitle.innerText = key;
+                    list.appendChild(catTitle);
 
-    async function switchChannel(id) {
-        if (state.currentChannelID === id && state.messages[id]) return; // Avoid re-fetch if same
-        
-        state.currentChannelID = id;
-        
-        // Close mobile menu
-        $('sidebar').classList.remove('open');
-        $('mob-overlay').style.display = 'none';
-
-        // Update UI
-        renderNav();
-        const [main, sub] = id.split('::');
-        $('room-title').innerText = sub ? `# ${sub}` : `# ${main}`;
-        $('room-desc').innerText = sub ? `In ${main}` : 'Main Channel';
-        $('chat-box').innerHTML = '<div style="padding:2rem;text-align:center;color:#555">Loading...</div>';
-
-        // Cleanup Subs
-        state.subscriptions.forEach(s => s.unsubscribe());
-        state.subscriptions = [];
-
-        // Load Data
-        await fetchMessages(id);
-        subscribe(id);
-    }
-
-    // --- DATA & API ---
-    async function fetchMessages(channelID) {
-        try {
-            const res = await window.aws_amplify.API.graphql({
-                query: QUERIES.list,
-                variables: { 
-                    filter: { channel: { eq: channelID } },
-                    limit: 100 
-                },
-                authMode: 'AMAZON_COGNITO_USER_POOLS'
+                    subs.forEach(sub => {
+                        const fullId = `${key}::${sub}`;
+                        const isActive = state.currentChannelID === fullId;
+                        const btn = document.createElement('button');
+                        btn.className = `channel-item sub-room ${isActive ? 'active' : ''}`;
+                        btn.innerHTML = sub;
+                        btn.onclick = () => switchChannel(fullId);
+                        list.appendChild(btn);
+                    });
+                }
             });
+        }
+
+        async function switchChannel(id) {
+            if (state.currentChannelID === id && state.messages[id] && state.messages[id].length > 0) {
+                // Already loaded? just re-render and ensure sub is active
+                state.currentChannelID = id;
+                renderNav();
+                renderChat(id);
+                // We still resubscribe to be safe
+            } else {
+                state.currentChannelID = id;
+                renderNav();
+                const [main, sub] = id.split('::');
+                $('room-title').innerText = sub ? `# ${sub}` : `# ${main}`;
+                $('room-desc').innerText = sub ? `In ${main}` : 'Main Channel';
+                $('chat-box').innerHTML = '<div style="padding:2rem;text-align:center;color:#555">Loading...</div>';
+            }
             
-            let msgs = res.data.listMessages.items;
-            // Client-side sort to be safe
-            msgs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            
-            state.messages[channelID] = msgs;
-            renderChat(channelID);
-        } catch (e) {
-            console.error("Fetch error", e);
-            $('chat-box').innerHTML = '<div style="color:var(--danger);text-align:center;">Failed to load messages</div>';
-        }
-    }
-
-    function subscribe(channelID) {
-        const api = window.aws_amplify.API;
-        
-        // 1. New Messages & Commands
-        const subCreate = api.graphql({
-            query: QUERIES.subscribe,
-            variables: { filter: { channel: { eq: channelID } } },
-            authMode: 'AMAZON_COGNITO_USER_POOLS'
-        }).subscribe({
-            next: ({ value }) => {
-                const msg = value.data.onCreateMessage;
-                if (msg.channel !== state.currentChannelID) return;
-                handleIncoming(msg);
-            },
-            error: err => console.error("Sub error", err)
-        });
-
-        // 2. Deletes
-        const subDelete = api.graphql({
-            query: QUERIES.subscribeDelete,
-            variables: { filter: { channel: { eq: channelID } } },
-            authMode: 'AMAZON_COGNITO_USER_POOLS'
-        }).subscribe({
-            next: ({ value }) => {
-                const delMsg = value.data.onDeleteMessage;
-                // AppSync filter works, but double check ID existence
-                removeMessageLocal(delMsg.id);
-            }
-        });
-
-        state.subscriptions.push(subCreate, subDelete);
-    }
-
-    function handleIncoming(msg) {
-        const cid = state.currentChannelID;
-        if (!state.messages[cid]) state.messages[cid] = [];
-
-        // Check Control Message
-        if (msg.content.startsWith('CMD::')) {
-            processCommand(msg);
-            return;
-        }
-
-        // Dedupe
-        if (state.messages[cid].find(m => m.id === msg.id)) return;
-
-        state.messages[cid].push(msg);
-        renderChat(cid);
-    }
-
-    function processCommand(msg) {
-        const parts = msg.content.split('::');
-        const cmd = parts[1];
-        const cid = state.currentChannelID;
-        const list = state.messages[cid];
-
-        if (cmd === 'DELETE') {
-            // Soft delete signal from client, remove locally immediately
-            const targetId = parts[2];
-            removeMessageLocal(targetId);
-        } else if (cmd === 'EDIT') {
-            const targetId = parts[2];
-            const newText = parts.slice(3).join('::');
-            const target = list.find(m => m.id === targetId);
-            if (target) {
-                target.content = newText;
-                target.isEdited = true;
-                renderChat(cid);
-            }
-        } else if (cmd === 'REACT') {
-            const targetId = parts[2];
-            const emoji = parts[3];
-            const uid = parts[4];
-            updateReaction(targetId, emoji, uid, true);
-        } else if (cmd === 'UNREACT') {
-            const targetId = parts[2];
-            const emoji = parts[3];
-            const uid = parts[4];
-            updateReaction(targetId, emoji, uid, false);
-        } else if (cmd === 'TYPING') {
-            const uid = parts[2];
-            const name = parts[3];
-            if (uid !== state.user.username) showTyping(name);
-        }
-    }
-
-    function removeMessageLocal(id) {
-        const cid = state.currentChannelID;
-        if (!state.messages[cid]) return;
-        
-        const initialLen = state.messages[cid].length;
-        state.messages[cid] = state.messages[cid].filter(m => m.id !== id);
-        
-        if (state.messages[cid].length !== initialLen) {
-            renderChat(cid);
-        }
-    }
-
-    // --- RENDER CHAT ---
-    function renderChat(channelID) {
-        if (channelID !== state.currentChannelID) return;
-        const box = $('chat-box');
-        const msgs = state.messages[channelID] || [];
-        
-        // Filter out CMDs and empty
-        const visible = msgs.filter(m => !m.content.startsWith('CMD::'));
-
-        if (visible.length === 0) {
-            box.innerHTML = `<div class="empty-state">No messages here yet.<br>Be the first to say hello! 👋</div>`;
-            return;
-        }
-
-        // Smart Diffing could go here, but simple innerHTML replacement is safer for sync
-        box.innerHTML = visible.map(m => createMsgHTML(m)).join('');
-        box.scrollTop = box.scrollHeight;
-    }
-
-    function createMsgHTML(msg) {
-        const isOwn = state.user.username === msg.email; // Using email as ID match for simplicity based on legacy code
-        const time = new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        // Linkify
-        const safeContent = msg.content
-            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-            .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:inherit;text-decoration:underline;">$1</a>');
-
-        const reactions = state.reactions[msg.id] || {};
-        let reactHTML = '';
-        Object.keys(reactions).forEach(emoji => {
-            const count = reactions[emoji].length;
-            if (count > 0) {
-                const iReacted = reactions[emoji].includes(state.user.username);
-                reactHTML += `<div class="reaction-tag ${iReacted?'active':''}" onclick="toggleReact('${msg.id}','${emoji}')">${emoji} ${count}</div>`;
-            }
-        });
-
-        return `
-            <div class="msg-group ${isOwn ? 'own' : 'other'}" id="msg-${msg.id}">
-                ${!isOwn ? `<div class="msg-sender">${msg.name}</div>` : ''}
-                <div class="msg-bubble">
-                    ${safeContent}
-                    ${msg.isEdited ? '<span style="font-size:0.6em;opacity:0.6;margin-left:4px">(edited)</span>' : ''}
-                    ${reactHTML ? `<div class="reactions-row">${reactHTML}</div>` : ''}
-                </div>
-                <div class="msg-actions">
-                    ${isOwn ? `<button class="action-btn" onclick="editMsg('${msg.id}')">✎</button>` : ''}
-                    ${isOwn ? `<button class="action-btn" onclick="delMsg('${msg.id}')">🗑️</button>` : ''}
-                    <button class="action-btn" onclick="toggleReact('${msg.id}','❤️')">❤️</button>
-                    <button class="action-btn" onclick="toggleReact('${msg.id}','👍')">👍</button>
-                </div>
-                <div class="msg-meta">${time}</div>
-            </div>
-        `;
-    }
-
-    // --- ACTIONS ---
-    window.sendMsg = async () => {
-        const txt = $('msg-input').value.trim();
-        if (!txt) return;
-
-        if (BAD_WORDS.some(w => txt.toLowerCase().includes(w))) {
-            alert("Please keep language clean.");
-            return;
-        }
-
-        const msg = {
-            id: crypto.randomUUID(),
-            channel: state.currentChannelID,
-            content: txt,
-            email: state.user.username, // mapping username to email field for consistency with legacy schema
-            name: state.user.attributes.name,
-            dept: state.user.attributes['custom:dept'],
-            year: state.user.attributes['custom:year'],
-            timestamp: Date.now(),
-            createdAt: new Date().toISOString()
-        };
-
-        $('msg-input').value = '';
-
-        try {
-            // Optimistic UI handled by subscription usually, but for speed we can push:
-            // state.messages[state.currentChannelID].push(msg); renderChat(state.currentChannelID);
-            await window.aws_amplify.API.graphql({
-                query: QUERIES.create,
-                variables: { input: msg },
-                authMode: 'AMAZON_COGNITO_USER_POOLS'
-            });
-        } catch (e) {
-            console.error(e);
-            alert("Failed to send");
-        }
-    };
-
-    window.delMsg = (id) => {
-        confirmModal("Delete this message?", async () => {
-            // 1. Send CMD for instant UI update on peers
-            await sendCMD('DELETE', id);
-            // 2. Hard delete from DB
-            await window.aws_amplify.API.graphql({
-                query: QUERIES.delete,
-                variables: { input: { id } },
-                authMode: 'AMAZON_COGNITO_USER_POOLS'
-            });
-            // Local remove
-            removeMessageLocal(id);
-        });
-    };
-
-    window.editMsg = (id) => {
-        const list = state.messages[state.currentChannelID];
-        const m = list.find(x => x.id === id);
-        if (!m) return;
-
-        promptModal("Edit Message", m.content, async (newVal) => {
-            if (newVal && newVal !== m.content) {
-                await sendCMD('EDIT', id, newVal);
-                // Local update
-                m.content = newVal;
-                m.isEdited = true;
-                renderChat(state.currentChannelID);
-            }
-        });
-    };
-
-    window.toggleReact = (mid, emoji) => {
-        const uid = state.user.username;
-        // Optimistic update
-        const hadIt = updateReaction(mid, emoji, uid);
-        
-        if (hadIt) {
-            // remove
-            updateReaction(mid, emoji, uid, false);
-            sendCMD('UNREACT', mid, emoji, uid);
-        } else {
-            // add
-            updateReaction(mid, emoji, uid, true);
-            sendCMD('REACT', mid, emoji, uid);
-        }
-        renderChat(state.currentChannelID);
-    };
-
-    function updateReaction(mid, emoji, uid, forceState = null) {
-        if (!state.reactions[mid]) state.reactions[mid] = {};
-        if (!state.reactions[mid][emoji]) state.reactions[mid][emoji] = [];
-        
-        const list = state.reactions[mid][emoji];
-        const idx = list.indexOf(uid);
-        const exists = idx > -1;
-
-        if (forceState === true && !exists) list.push(uid);
-        else if (forceState === false && exists) list.splice(idx, 1);
-        else if (forceState === null) return exists; // check mode
-        
-        return exists;
-    }
-
-    async function sendCMD(type, ...args) {
-        const payload = `CMD::${type}::${args.join('::')}`;
-        const msg = {
-            id: crypto.randomUUID(),
-            channel: state.currentChannelID,
-            content: payload,
-            email: state.user.username,
-            name: "SYSTEM",
-            dept: "SYS",
-            year: "0",
-            timestamp: Date.now(),
-            createdAt: new Date().toISOString()
-        };
-        await window.aws_amplify.API.graphql({
-            query: QUERIES.create,
-            variables: { input: msg },
-            authMode: 'AMAZON_COGNITO_USER_POOLS'
-        });
-    }
-
-    let typingTimeout;
-    function showTyping(name) {
-        const el = $('typing-txt');
-        el.innerText = `${name} is typing...`;
-        el.classList.add('active');
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => el.classList.remove('active'), 2000);
-    }
-
-    // --- AUTH ---
-    function loadUser(user) {
-        state.user = user;
-        $('u-name').innerText = user.attributes.name;
-        $('u-dept').innerText = `${user.attributes['custom:dept']} - ${user.attributes['custom:year']}`;
-        $('avatar').innerText = user.attributes.name.charAt(0);
-        
-        $('auth-view').style.opacity = '0';
-        setTimeout(() => {
-            $('auth-view').style.display = 'none';
-            $('app-view').classList.add('active');
-            switchChannel('General');
-        }, 300);
-    }
-
-    window.switchAuth = (mode) => {
-        $('login-form').style.display = mode === 'login' ? 'block' : 'none';
-        $('signup-form').style.display = mode === 'signup' ? 'block' : 'none';
-    };
-
-    $('btn-login').onclick = async () => {
-        const e = $('login-email').value;
-        const p = $('login-pass').value;
-        if(!e || !p) return;
-        try {
-            const u = await window.aws_amplify.Auth.signIn(e, p);
-            loadUser(u);
-        } catch(err) {
-            if(err.code === 'UserNotConfirmedException') {
-                state.pendingVerify = e;
-                $('login-form').style.display='none';
-                $('verify-form').style.display='block';
-            } else alert(err.message);
-        }
-    };
-
-    $('btn-signup').onclick = async () => {
-        const e = $('reg-email').value;
-        const p = $('reg-pass').value;
-        const n = $('reg-name').value;
-        const d = $('reg-dept').value;
-        const y = $('reg-year').value;
-        
-        if(!e || !p || !n || !d || !y) return alert("All fields required");
-        if(!e.endsWith('@jerusalemengg.ac.in')) return alert("Use college email");
-
-        try {
-            await window.aws_amplify.Auth.signUp({
-                username: e, password: p,
-                attributes: { email:e, name:n, 'custom:dept':d, 'custom:year':y }
-            });
-            state.pendingVerify = e;
-            $('signup-form').style.display='none';
-            $('verify-form').style.display='block';
-        } catch(err) { alert(err.message); }
-    };
-
-    $('btn-verify').onclick = async () => {
-        const c = $('verify-code').value;
-        try {
-            await window.aws_amplify.Auth.confirmSignUp(state.pendingVerify, c);
-            alert("Verified! Please login.");
-            window.location.reload();
-        } catch(err) { alert(err.message); }
-    };
-
-    $('btn-logout').onclick = async () => {
-        await window.aws_amplify.Auth.signOut();
-        window.location.reload();
-    };
-
-    // --- UTILS ---
-    function setupUIListeners() {
-        $('btn-send').onclick = sendMsg;
-        $('msg-input').onkeydown = e => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } };
-        $('msg-input').oninput = () => {
-            if (state.user) sendCMD('TYPING', state.user.username, state.user.attributes.name);
-        };
-        
-        $('menu-btn').onclick = () => {
-            $('sidebar').classList.add('open');
-            $('mob-overlay').style.display = 'block';
-        };
-        $('mob-overlay').onclick = () => {
+            // Close mobile menu
             $('sidebar').classList.remove('open');
             $('mob-overlay').style.display = 'none';
-        };
-    }
 
-    function confirmModal(text, onYes) {
-        const container = $('modal-container');
-        container.innerHTML = `
-            <div class="modal-overlay active">
-                <div class="modal-box">
-                    <h3 style="color:#fff;margin-bottom:1rem">${text}</h3>
-                    <div class="modal-actions">
-                        <button class="btn-logout" style="width:auto" onclick="closeModal()">Cancel</button>
-                        <button class="btn-full" style="width:auto;margin:0;background:var(--danger)" id="modal-yes">Confirm</button>
-                    </div>
-                </div>
-            </div>`;
-        $('modal-yes').onclick = () => { onYes(); closeModal(); };
-    }
+            // Cleanup Subs
+            state.subscriptions.forEach(s => s.unsubscribe());
+            state.subscriptions = [];
 
-    function promptModal(title, val, onSave) {
-        const container = $('modal-container');
-        container.innerHTML = `
-            <div class="modal-overlay active">
-                <div class="modal-box">
-                    <h3 style="color:#fff;margin-bottom:1rem">${title}</h3>
-                    <textarea class="input-field" id="prompt-val" rows="3">${val}</textarea>
-                    <div class="modal-actions">
-                        <button class="btn-logout" style="width:auto" onclick="closeModal()">Cancel</button>
-                        <button class="btn-full" style="width:auto;margin:0" id="modal-save">Save</button>
-                    </div>
-                </div>
-            </div>`;
-        $('modal-save').onclick = () => { onSave($('prompt-val').value); closeModal(); };
-    }
-
-    window.closeModal = () => $('modal-container').innerHTML = '';
-
-    function initStars() {
-        const wrap = document.querySelector('.stars-wrapper');
-        for(let i=0; i<100; i++) {
-            const s = document.createElement('div');
-            const size = Math.random()*2 + 1;
-            s.style.cssText = `
-                position:absolute; background:#fff; border-radius:50%;
-                width:${size}px; height:${size}px;
-                left:${Math.random()*100}%; top:${Math.random()*100}%;
-                opacity:${Math.random()}; animation:pulse ${Math.random()*3+2}s infinite;
-            `;
-            wrap.appendChild(s);
+            // Load Data
+            await fetchMessages(id);
+            subscribe(id);
         }
-    }
-</script>
+
+        // --- DATA & API ---
+        async function fetchMessages(channelID) {
+            try {
+                const res = await window.aws_amplify.API.graphql({
+                    query: QUERIES.list,
+                    variables: { 
+                        filter: { channel: { eq: channelID } },
+                        limit: 100 
+                    },
+                    authMode: 'AMAZON_COGNITO_USER_POOLS'
+                });
+                
+                let msgs = res.data.listMessages.items;
+                msgs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                
+                state.messages[channelID] = msgs;
+                renderChat(channelID);
+            } catch (e) {
+                console.error("Fetch error", e);
+                $('chat-box').innerHTML = '<div style="color:var(--danger);text-align:center;">Failed to connect.</div>';
+            }
+        }
+
+        function subscribe(channelID) {
+            const api = window.aws_amplify.API;
+            
+            // 1. New Messages & Commands
+            const subCreate = api.graphql({
+                query: QUERIES.subscribe,
+                variables: { filter: { channel: { eq: channelID } } },
+                authMode: 'AMAZON_COGNITO_USER_POOLS'
+            }).subscribe({
+                next: ({ value }) => {
+                    const msg = value.data.onCreateMessage;
+                    if (msg.channel !== state.currentChannelID) return;
+                    handleIncoming(msg);
+                },
+                error: err => console.error("Sub error", err)
+            });
+
+            // 2. Deletes
+            const subDelete = api.graphql({
+                query: QUERIES.subscribeDelete,
+                variables: { filter: { channel: { eq: channelID } } },
+                authMode: 'AMAZON_COGNITO_USER_POOLS'
+            }).subscribe({
+                next: ({ value }) => {
+                    const delMsg = value.data.onDeleteMessage;
+                    removeMessageLocal(delMsg.id);
+                },
+                error: err => console.error("Sub delete error", err)
+            });
+
+            state.subscriptions.push(subCreate, subDelete);
+        }
+
+        function handleIncoming(msg) {
+            const cid = state.currentChannelID;
+            if (!state.messages[cid]) state.messages[cid] = [];
+
+            // Check Control Message
+            if (msg.content.startsWith('CMD::')) {
+                processCommand(msg);
+                return;
+            }
+
+            // Sync Logic:
+            // If the message exists (by ID), it means we added it optimistically.
+            // We should UPDATE it with the server response to ensure fields like 'createdAt' are synced.
+            const existingIdx = state.messages[cid].findIndex(m => m.id === msg.id);
+            if (existingIdx > -1) {
+                state.messages[cid][existingIdx] = msg;
+                renderChat(cid);
+                return;
+            }
+
+            state.messages[cid].push(msg);
+            renderChat(cid);
+        }
+
+        function processCommand(msg) {
+            const parts = msg.content.split('::');
+            const cmd = parts[1];
+            const cid = state.currentChannelID;
+            const list = state.messages[cid] || [];
+
+            if (cmd === 'DELETE') {
+                const targetId = parts[2];
+                removeMessageLocal(targetId);
+            } else if (cmd === 'EDIT') {
+                const targetId = parts[2];
+                const newText = parts.slice(3).join('::');
+                const target = list.find(m => m.id === targetId);
+                if (target) {
+                    target.content = newText;
+                    target.isEdited = true;
+                    renderChat(cid);
+                }
+            } else if (cmd === 'REACT') {
+                const targetId = parts[2];
+                const emoji = parts[3];
+                const uid = parts[4];
+                updateReaction(targetId, emoji, uid, true);
+            } else if (cmd === 'UNREACT') {
+                const targetId = parts[2];
+                const emoji = parts[3];
+                const uid = parts[4];
+                updateReaction(targetId, emoji, uid, false);
+            } else if (cmd === 'TYPING') {
+                const uid = parts[2]; // This is the ID (username)
+                const name = parts[3];
+                // Compare with our own ID to ignore own typing status
+                if (uid !== state.user.username) showTyping(name);
+            }
+        }
+
+        function removeMessageLocal(id) {
+            const cid = state.currentChannelID;
+            if (!state.messages[cid]) return;
+            
+            const initialLen = state.messages[cid].length;
+            state.messages[cid] = state.messages[cid].filter(m => m.id !== id);
+            
+            if (state.messages[cid].length !== initialLen) {
+                renderChat(cid);
+            }
+        }
+
+        // --- RENDER CHAT ---
+        function renderChat(channelID) {
+            if (channelID !== state.currentChannelID) return;
+            const box = $('chat-box');
+            const msgs = state.messages[channelID] || [];
+            
+            // Filter out CMDs and deleted messages
+            const visible = msgs.filter(m => !m.content.startsWith('CMD::'));
+
+            if (visible.length === 0) {
+                box.innerHTML = `<div class="empty-state">No messages here yet.<br>Be the first to say hello! 👋</div>`;
+                return;
+            }
+
+            box.innerHTML = visible.map(m => createMsgHTML(m)).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function createMsgHTML(msg) {
+            // Check ownership by EMAIL not username, because msg stores email
+            const isOwn = state.user.email === msg.email;
+            
+            // Format time: handle both AWSDateTime (string) and timestamp (number)
+            let timeStr = "";
+            if (msg.createdAt) {
+                timeStr = new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            } else {
+                 timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+            
+            // Linkify
+            const safeContent = msg.content
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:inherit;text-decoration:underline;">$1</a>');
+
+            const reactions = state.reactions[msg.id] || {};
+            let reactHTML = '';
+            // We use user's email for reaction tracking to be consistent with previous structure
+            Object.keys(reactions).forEach(emoji => {
+                const count = reactions[emoji].length;
+                if (count > 0) {
+                    const iReacted = reactions[emoji].includes(state.user.email);
+                    reactHTML += `<div class="reaction-tag ${iReacted?'active':''}" onclick="toggleReact('${msg.id}','${emoji}')">${emoji} ${count}</div>`;
+                }
+            });
+
+            return `
+                <div class="msg-group ${isOwn ? 'own' : 'other'}" id="msg-${msg.id}">
+                    ${!isOwn ? `<div class="msg-sender">${msg.name}</div>` : ''}
+                    <div class="msg-bubble">
+                        ${safeContent}
+                        ${msg.isEdited ? '<span style="font-size:0.6em;opacity:0.6;margin-left:4px">(edited)</span>' : ''}
+                        ${reactHTML ? `<div class="reactions-row">${reactHTML}</div>` : ''}
+                    </div>
+                    <div class="msg-actions">
+                        ${isOwn ? `<button class="action-btn" onclick="editMsg('${msg.id}')">✎</button>` : ''}
+                        ${isOwn ? `<button class="action-btn" onclick="delMsg('${msg.id}')">🗑️</button>` : ''}
+                        <button class="action-btn" onclick="toggleReact('${msg.id}','❤️')">❤️</button>
+                        <button class="action-btn" onclick="toggleReact('${msg.id}','👍')">👍</button>
+                    </div>
+                    <div class="msg-meta">${timeStr}</div>
+                </div>
+            `;
+        }
+
+        // --- ACTIONS ---
+        window.sendMsg = async () => {
+            if (!state.user) {
+                alert("Session lost. Please reload.");
+                return;
+            }
+
+            const inputEl = $('msg-input');
+            const txt = inputEl.value.trim();
+            if (!txt) return;
+
+            if (BAD_WORDS.some(w => txt.toLowerCase().includes(w))) {
+                alert("Please keep language clean.");
+                return;
+            }
+
+            // --- DATA PREPARATION ---
+            // We separate the 'Optimistic Message' (for UI) from the 'API Payload' (for Backend).
+            // This is critical because AppSync/DynamoDB often auto-generates 'createdAt' and 'updatedAt'.
+            // Sending these fields manually in the input often causes mutations to fail silently or with errors.
+            
+            const id = uuid();
+            const timestamp = Date.now();
+            const nowISO = new Date().toISOString();
+
+            // 1. Optimistic Message (Includes createdAt for instant UI rendering)
+            const optimisticMsg = {
+                id: id,
+                channel: state.currentChannelID,
+                content: txt,
+                email: state.user.email,
+                name: state.user.name,
+                dept: state.user.dept,
+                year: state.user.year,
+                timestamp: timestamp,
+                createdAt: nowISO // We need this to render the time immediately
+            };
+
+            // 2. API Payload (EXCLUDE createdAt/updatedAt to let server handle it)
+            const apiInput = {
+                id: id,
+                channel: state.currentChannelID,
+                content: txt,
+                email: state.user.email,
+                name: state.user.name,
+                dept: state.user.dept,
+                year: state.user.year,
+                timestamp: timestamp
+                // NO createdAt here
+            };
+
+            inputEl.value = '';
+
+            try {
+                // Optimistic UI Update
+                if (!state.messages[state.currentChannelID]) state.messages[state.currentChannelID] = [];
+                state.messages[state.currentChannelID].push(optimisticMsg);
+                renderChat(state.currentChannelID);
+
+                // Send to AWS
+                await window.aws_amplify.API.graphql({
+                    query: QUERIES.create,
+                    variables: { input: apiInput },
+                    authMode: 'AMAZON_COGNITO_USER_POOLS'
+                });
+                
+                // Note: The subscription will fire shortly. 'handleIncoming' will update 
+                // the existing optimistic message with the official server response.
+            } catch (e) {
+                console.error("Send failed", e);
+                console.log("Failed Payload:", apiInput);
+                alert("Failed to send message. Please try again.");
+                
+                // Rollback optimistic update on failure
+                removeMessageLocal(id);
+                inputEl.value = txt; // Restore text
+            }
+        };
+
+        window.delMsg = (id) => {
+            confirmModal("Delete this message?", async () => {
+                // 1. Send CMD for instant UI update on peers
+                await sendCMD('DELETE', id);
+                // 2. Hard delete from DB
+                try {
+                    await window.aws_amplify.API.graphql({
+                        query: QUERIES.delete,
+                        variables: { input: { id } },
+                        authMode: 'AMAZON_COGNITO_USER_POOLS'
+                    });
+                } catch(e) { console.error("Del failed", e); }
+                
+                // Local remove
+                removeMessageLocal(id);
+            });
+        };
+
+        window.editMsg = (id) => {
+            const list = state.messages[state.currentChannelID];
+            const m = list.find(x => x.id === id);
+            if (!m) return;
+
+            promptModal("Edit Message", m.content, async (newVal) => {
+                if (newVal && newVal !== m.content) {
+                    if (BAD_WORDS.some(w => newVal.toLowerCase().includes(w))) {
+                        alert("Language check failed.");
+                        return;
+                    }
+                    await sendCMD('EDIT', id, newVal);
+                    // Local update
+                    m.content = newVal;
+                    m.isEdited = true;
+                    renderChat(state.currentChannelID);
+                }
+            });
+        };
+
+        window.toggleReact = (mid, emoji) => {
+            const uid = state.user.email; // Use email for consistency
+            
+            // Optimistic update
+            const hadIt = updateReaction(mid, emoji, uid);
+            
+            if (hadIt) {
+                // remove
+                updateReaction(mid, emoji, uid, false);
+                sendCMD('UNREACT', mid, emoji, uid);
+            } else {
+                // add
+                updateReaction(mid, emoji, uid, true);
+                sendCMD('REACT', mid, emoji, uid);
+            }
+            renderChat(state.currentChannelID);
+        };
+
+        function updateReaction(mid, emoji, uid, forceState = null) {
+            if (!state.reactions[mid]) state.reactions[mid] = {};
+            if (!state.reactions[mid][emoji]) state.reactions[mid][emoji] = [];
+            
+            const list = state.reactions[mid][emoji];
+            const idx = list.indexOf(uid);
+            const exists = idx > -1;
+
+            if (forceState === true && !exists) list.push(uid);
+            else if (forceState === false && exists) list.splice(idx, 1);
+            else if (forceState === null) return exists; // check mode
+            
+            return exists;
+        }
+
+        async function sendCMD(type, ...args) {
+            if(!state.user) return;
+            const payload = `CMD::${type}::${args.join('::')}`;
+            const id = uuid();
+            const timestamp = Date.now();
+            
+            // Exclude createdAt from CMD payload as well
+            const apiInput = {
+                id: id,
+                channel: state.currentChannelID,
+                content: payload,
+                email: state.user.email,
+                name: "SYSTEM",
+                dept: "SYS",
+                year: "0",
+                timestamp: timestamp
+            };
+            
+            try {
+                await window.aws_amplify.API.graphql({
+                    query: QUERIES.create,
+                    variables: { input: apiInput },
+                    authMode: 'AMAZON_COGNITO_USER_POOLS'
+                });
+            } catch(e) { console.error("CMD error", e); }
+        }
+
+        let typingTimeout;
+        function showTyping(name) {
+            const el = $('typing-txt');
+            el.innerText = `${name} is typing...`;
+            el.classList.add('active');
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => el.classList.remove('active'), 2000);
+        }
+
+        // --- AUTH UI ---
+        window.switchAuth = (mode) => {
+            $('login-form').style.display = mode === 'login' ? 'block' : 'none';
+            $('signup-form').style.display = mode === 'signup' ? 'block' : 'none';
+        };
+
+        $('btn-login').onclick = async () => {
+            const e = $('login-email').value;
+            const p = $('login-pass').value;
+            if(!e || !p) return;
+            try {
+                const u = await window.aws_amplify.Auth.signIn(e, p);
+                loadUser(u);
+            } catch(err) {
+                if(err.code === 'UserNotConfirmedException') {
+                    state.pendingVerify = e;
+                    $('login-form').style.display='none';
+                    $('verify-form').style.display='block';
+                } else alert(err.message);
+            }
+        };
+
+        $('btn-signup').onclick = async () => {
+            const e = $('reg-email').value;
+            const p = $('reg-pass').value;
+            const n = $('reg-name').value;
+            const d = $('reg-dept').value;
+            const y = $('reg-year').value;
+            
+            if(!e || !p || !n || !d || !y) return alert("All fields required");
+            if(!e.endsWith('@jerusalemengg.ac.in')) return alert("Use college email");
+
+            try {
+                await window.aws_amplify.Auth.signUp({
+                    username: e, password: p,
+                    attributes: { email:e, name:n, 'custom:dept':d, 'custom:year':y }
+                });
+                state.pendingVerify = e;
+                $('signup-form').style.display='none';
+                $('verify-form').style.display='block';
+            } catch(err) { alert(err.message); }
+        };
+
+        $('btn-verify').onclick = async () => {
+            const c = $('verify-code').value;
+            try {
+                await window.aws_amplify.Auth.confirmSignUp(state.pendingVerify, c);
+                alert("Verified! Please login.");
+                window.location.reload();
+            } catch(err) { alert(err.message); }
+        };
+
+        $('btn-logout').onclick = async () => {
+            await window.aws_amplify.Auth.signOut();
+            window.location.reload();
+        };
+
+        // --- UTILS ---
+        function setupUIListeners() {
+            $('btn-send').onclick = sendMsg;
+            $('msg-input').onkeydown = e => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } };
+            $('msg-input').oninput = () => {
+                if (state.user) {
+                    // Send typing indicator with USERNAME (ID) and NAME
+                    sendCMD('TYPING', state.user.username, state.user.name);
+                }
+            };
+            
+            $('menu-btn').onclick = () => {
+                $('sidebar').classList.add('open');
+                $('mob-overlay').style.display = 'block';
+            };
+            $('mob-overlay').onclick = () => {
+                $('sidebar').classList.remove('open');
+                $('mob-overlay').style.display = 'none';
+            };
+        }
+
+        function confirmModal(text, onYes) {
+            const container = $('modal-container');
+            container.innerHTML = `
+                <div class="modal-overlay active">
+                    <div class="modal-box">
+                        <h3 style="color:#fff;margin-bottom:1rem">${text}</h3>
+                        <div class="modal-actions">
+                            <button class="btn-logout" style="width:auto" onclick="closeModal()">Cancel</button>
+                            <button class="btn-full" style="width:auto;margin:0;background:var(--danger)" id="modal-yes">Confirm</button>
+                        </div>
+                    </div>
+                </div>`;
+            $('modal-yes').onclick = () => { onYes(); closeModal(); };
+        }
+
+        function promptModal(title, val, onSave) {
+            const container = $('modal-container');
+            container.innerHTML = `
+                <div class="modal-overlay active">
+                    <div class="modal-box">
+                        <h3 style="color:#fff;margin-bottom:1rem">${title}</h3>
+                        <textarea class="input-field" id="prompt-val" rows="3">${val}</textarea>
+                        <div class="modal-actions">
+                            <button class="btn-logout" style="width:auto" onclick="closeModal()">Cancel</button>
+                            <button class="btn-full" style="width:auto;margin:0" id="modal-save">Save</button>
+                        </div>
+                    </div>
+                </div>`;
+            $('modal-save').onclick = () => { onSave($('prompt-val').value); closeModal(); };
+        }
+
+        window.closeModal = () => $('modal-container').innerHTML = '';
+
+        function initStars() {
+            const wrap = document.querySelector('.stars-wrapper');
+            for(let i=0; i<100; i++) {
+                const s = document.createElement('div');
+                const size = Math.random()*2 + 1;
+                s.style.cssText = `
+                    position:absolute; background:#fff; border-radius:50%;
+                    width:${size}px; height:${size}px;
+                    left:${Math.random()*100}%; top:${Math.random()*100}%;
+                    opacity:${Math.random()}; animation:pulse ${Math.random()*3+2}s infinite;
+                `;
+                wrap.appendChild(s);
+            }
+        }
+    </script>
 </body>
 </html>
